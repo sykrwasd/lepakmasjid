@@ -14,6 +14,9 @@ export interface Mosque {
   created_by: string;
   created: string;
   updated: string;
+  // Optional fields for list view with amenities
+  amenities?: (Amenity & { details: MosqueAmenityDetails; verified: boolean })[];
+  customAmenities?: MosqueAmenity[];
 }
 
 export interface Amenity {

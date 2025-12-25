@@ -2,6 +2,68 @@ import { pb } from '../pocketbase';
 import type { Mosque, MosqueFilters, MosqueWithDetails } from '@/types';
 import type { Amenity, MosqueAmenity, Activity } from '@/types';
 
+// Helper function to fetch and attach amenities to mosques
+async function attachAmenitiesToMosques(mosques: Mosque[]): Promise<Mosque[]> {
+  if (mosques.length === 0) {
+    return mosques;
+  }
+
+  try {
+    const mosqueIds = mosques.map(m => m.id);
+    const mosqueIdsFilter = mosqueIds.map(id => `mosque_id = "${id}"`).join(' || ');
+    
+    const amenitiesResult = await pb.collection('mosque_amenities').getList(1, 500, {
+      filter: `(${mosqueIdsFilter})`,
+      expand: 'amenity_id',
+    });
+    
+    // Group amenities by mosque_id
+    const amenitiesByMosque: Record<string, (Amenity & { details: any; verified: boolean })[]> = {};
+    const customAmenitiesByMosque: Record<string, MosqueAmenity[]> = {};
+    
+    amenitiesResult.items.forEach((item: any) => {
+      const mosqueId = item.mosque_id;
+      
+      if (item.amenity_id && item.expand?.amenity_id) {
+        // Regular amenity
+        if (!amenitiesByMosque[mosqueId]) {
+          amenitiesByMosque[mosqueId] = [];
+        }
+        amenitiesByMosque[mosqueId].push({
+          ...item.expand.amenity_id,
+          details: item.details || {},
+          verified: item.verified || false,
+        });
+      } else {
+        // Custom amenity
+        if (!customAmenitiesByMosque[mosqueId]) {
+          customAmenitiesByMosque[mosqueId] = [];
+        }
+        customAmenitiesByMosque[mosqueId].push({
+          id: item.id,
+          mosque_id: item.mosque_id,
+          amenity_id: null,
+          details: item.details || {},
+          verified: item.verified || false,
+          created: item.created,
+          updated: item.updated,
+        });
+      }
+    });
+    
+    // Attach amenities to mosques
+    return mosques.map(mosque => ({
+      ...mosque,
+      amenities: amenitiesByMosque[mosque.id] || [],
+      customAmenities: customAmenitiesByMosque[mosque.id] || [],
+    })) as Mosque[];
+  } catch (amenitiesError: any) {
+    // If amenities fetch fails, return mosques without amenities
+    console.warn('Failed to fetch amenities:', amenitiesError);
+    return mosques;
+  }
+}
+
 export const mosquesApi = {
   // List mosques with filters
   async list(filters?: MosqueFilters): Promise<Mosque[]> {
@@ -39,7 +101,10 @@ export const mosquesApi = {
           filter: filterString,
           sort: sortString,
         });
-        return result.items as unknown as Mosque[];
+        const mosques = result.items as unknown as Mosque[];
+        
+        // Fetch and attach amenities to mosques
+        return await attachAmenitiesToMosques(mosques);
       } catch (statusError: any) {
         // If status filter fails with 400, try without it
         if (statusError.status === 400) {
@@ -70,7 +135,10 @@ export const mosquesApi = {
             
             // Filter client-side by status if available
             const items = result.items as unknown as Mosque[];
-            return items.filter((mosque: any) => !mosque.status || mosque.status === 'approved');
+            const mosques = items.filter((mosque: any) => !mosque.status || mosque.status === 'approved');
+            
+            // Fetch and attach amenities to mosques
+            return await attachAmenitiesToMosques(mosques);
           } catch (noStatusError: any) {
             // If even the query without status fails, try the most basic query
             console.warn('⚠️ Query without status filter also failed, trying basic query');
@@ -95,7 +163,8 @@ export const mosquesApi = {
                 }
               }
               
-              return filtered;
+              // Fetch and attach amenities to mosques
+              return await attachAmenitiesToMosques(filtered);
             } catch (basicError: any) {
               // Log the actual error from PocketBase
               console.error('❌ All query attempts failed');

@@ -77,8 +77,8 @@ async function updateCollectionPermissions(pb, collectionName, rules) {
     const collection = await pb.collections.getOne(collectionName);
     
     console.log(`\n📋 Updating permissions for: ${collectionName}`);
-    console.log(`   Current listRule: ${collection.listRule || 'null (public)'}`);
-    console.log(`   Current viewRule: ${collection.viewRule || 'null (public)'}`);
+    console.log(`   Current listRule: ${collection.listRule === null || collection.listRule === '' ? 'public' : collection.listRule}`);
+    console.log(`   Current viewRule: ${collection.viewRule === null || collection.viewRule === '' ? 'public' : collection.viewRule}`);
     
     await pb.collections.update(collection.id, {
       listRule: rules.listRule,
@@ -89,8 +89,8 @@ async function updateCollectionPermissions(pb, collectionName, rules) {
     });
     
     console.log(`   ✅ Updated permissions successfully`);
-    console.log(`   New listRule: ${rules.listRule || 'null (public)'}`);
-    console.log(`   New viewRule: ${rules.viewRule || 'null (public)'}`);
+    console.log(`   New listRule: ${rules.listRule === null || rules.listRule === '' ? 'public' : rules.listRule}`);
+    console.log(`   New viewRule: ${rules.viewRule === null || rules.viewRule === '' ? 'public' : rules.viewRule}`);
     
     return { success: true };
   } catch (err) {
@@ -118,24 +118,25 @@ async function main() {
   }
 
   // Define permissions that should be public read
+  // Using empty string "" instead of null for public access
   const publicReadCollections = {
     amenities: {
-      listRule: null, // Public read
-      viewRule: null, // Public read
+      listRule: '', // Public read (empty string = public)
+      viewRule: '', // Public read
       createRule: '@request.auth.id != ""',
       updateRule: '@request.auth.id != ""',
       deleteRule: '@request.auth.id != ""',
     },
     mosque_amenities: {
-      listRule: null, // Public read
-      viewRule: null, // Public read
+      listRule: '', // Public read (empty string = public)
+      viewRule: '', // Public read
       createRule: '@request.auth.id != ""',
       updateRule: '@request.auth.id != ""',
       deleteRule: '@request.auth.id != ""',
     },
     activities: {
-      listRule: null, // Public read
-      viewRule: null, // Public read
+      listRule: '', // Public read (empty string = public)
+      viewRule: '', // Public read
       createRule: '@request.auth.id != ""',
       updateRule: '@request.auth.id != "" && created_by = @request.auth.id',
       deleteRule: '@request.auth.id != "" && created_by = @request.auth.id',
