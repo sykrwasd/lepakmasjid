@@ -186,3 +186,61 @@ export function createFormDataWithImage(
   return formData;
 }
 
+/**
+ * Fetch an image file from a PocketBase record and convert it to a File object
+ * This is useful when copying images from submissions to mosques
+ * 
+ * @param record - The PocketBase record containing the image
+ * @param filename - The filename of the image (from the record's file field)
+ * @param collectionName - The collection name (e.g., 'submissions', 'mosques')
+ * @returns A File object ready for upload, or null if image not found
+ * 
+ * @example
+ * const submission = await pb.collection('submissions').getOne('RECORD_ID');
+ * const imageFile = await getImageFileFromRecord(submission, submission.image, 'submissions');
+ * if (imageFile) {
+ *   await mosquesApi.create(mosqueData, imageFile);
+ * }
+ */
+export async function getImageFileFromRecord(
+  record: RecordModel | { id: string; collectionId?: string; collectionName?: string; [key: string]: any },
+  filename: string | string[] | null | undefined,
+  collectionName?: string
+): Promise<File | null> {
+  if (!filename || !record?.id) {
+    return null;
+  }
+
+  // Get the image filename
+  const imageFilename = Array.isArray(filename) ? filename[0] : filename;
+  if (!imageFilename || typeof imageFilename !== 'string') {
+    return null;
+  }
+
+  try {
+    // Get the image URL
+    const baseUrl = getPocketBaseUrl();
+    const collectionId = collectionName || 
+      (record as any).collectionId || 
+      (record as any).collectionName || 
+      'submissions';
+    const recordId = record.id;
+    const imageUrl = `${baseUrl}/api/files/${collectionId}/${recordId}/${imageFilename}`;
+
+    // Fetch the image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      return null;
+    }
+
+    // Convert to blob and then to File
+    const blob = await response.blob();
+    const file = new File([blob], imageFilename, { type: blob.type || 'image/jpeg' });
+    
+    return file;
+  } catch (error) {
+    console.error('Error fetching image from record:', error);
+    return null;
+  }
+}
+

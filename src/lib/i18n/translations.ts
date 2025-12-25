@@ -131,6 +131,12 @@ export const translations = {
     'submit.success': 'Submission created successfully! It will be reviewed by an admin.',
     'submit.error': 'Failed to submit. Please try again.',
     'submit.must_login': 'You must be logged in to submit',
+    'submit.image': 'Mosque Image',
+    'submit.image_hint': 'Upload an image of the mosque (max 5MB, JPEG, PNG, WebP, or GIF)',
+    'submit.image_preview': 'Image preview',
+    'submit.remove_image': 'Remove image',
+    'submit.image_invalid_extension': 'Invalid file type. Please upload a JPEG, PNG, WebP, or GIF image.',
+    'submit.image_invalid_type': 'Invalid file. Please upload a valid image file.',
     
     // Mosque Detail
     'mosque_detail.not_found': 'Mosque not found',
@@ -351,6 +357,12 @@ export const translations = {
     'submit.success': 'Penyerahan berjaya dibuat! Ia akan disemak oleh pentadbir.',
     'submit.error': 'Gagal menghantar. Sila cuba lagi.',
     'submit.must_login': 'Anda mesti log masuk untuk menghantar',
+    'submit.image': 'Imej Masjid',
+    'submit.image_hint': 'Muat naik imej masjid (maks 5MB, JPEG, PNG, WebP, atau GIF)',
+    'submit.image_preview': 'Pratonton imej',
+    'submit.remove_image': 'Buang imej',
+    'submit.image_invalid_extension': 'Jenis fail tidak sah. Sila muat naik imej JPEG, PNG, WebP, atau GIF.',
+    'submit.image_invalid_type': 'Fail tidak sah. Sila muat naik fail imej yang sah.',
     
     // Mosque Detail
     'mosque_detail.not_found': 'Masjid tidak dijumpai',

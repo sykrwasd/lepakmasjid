@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
@@ -18,6 +18,8 @@ import { useTranslation } from '@/hooks/use-translation';
 import { SkipLink } from '@/components/SkipLink';
 import { AuthGuard } from '@/components/Auth/AuthGuard';
 import { toast } from 'sonner';
+import { validateImageFile } from '@/lib/pocketbase-images';
+import { X } from 'lucide-react';
 
 const createMosqueSchema = (t: (key: string) => string) => z.object({
   name: z.string().min(2, t('form.name_required')),
@@ -43,6 +45,10 @@ const Submit = () => {
   const { t } = useTranslation();
   const createSubmission = useCreateSubmission();
   const [error, setError] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const mosqueSchema = createMosqueSchema(t);
   type MosqueFormData = z.infer<typeof mosqueSchema>;
@@ -74,21 +80,109 @@ const Submit = () => {
     }
   }, [existingMosque, setValue]);
 
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setImageError(null);
+    
+    if (!file) {
+      setImageFile(null);
+      setImagePreview(null);
+      return;
+    }
+
+    // Validate image file securely
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setImageError(validationError);
+      setImageFile(null);
+      setImagePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Additional security: Check file extension
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      setImageError(t('submit.image_invalid_extension'));
+      setImageFile(null);
+      setImagePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Additional security: Verify it's actually an image by checking MIME type
+    if (!file.type.startsWith('image/')) {
+      setImageError(t('submit.image_invalid_type'));
+      setImageFile(null);
+      setImagePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+    setImageFile(file);
+  };
+
+  const handleRemoveImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImageFile(null);
+    setImagePreview(null);
+    setImageError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const onSubmit = async (data: MosqueFormData) => {
     if (!user) {
       setError(t('submit.must_login'));
       return;
     }
 
+    // Validate image if provided
+    if (imageFile) {
+      const validationError = validateImageFile(imageFile);
+      if (validationError) {
+        setImageError(validationError);
+        return;
+      }
+    }
+
     try {
       setError(null);
+      setImageError(null);
+      
       await createSubmission.mutateAsync({
         type: editId ? 'edit_mosque' : 'new_mosque',
         mosque_id: editId || undefined,
-        data,
+        data: {
+          ...data,
+          // Don't include image in data - it's handled separately via FormData
+        },
         status: 'pending',
         submitted_by: user.id,
         submitted_at: new Date().toISOString(),
+        imageFile, // Pass image file separately for FormData handling
       });
       
       toast.success(t('submit.success'));
@@ -189,6 +283,45 @@ const Submit = () => {
                 <div className="space-y-2">
                   <Label htmlFor="description_bm">{t('submit.description_bm')}</Label>
                   <Textarea id="description_bm" {...register('description_bm')} rows={4} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="image">{t('submit.image')}</Label>
+                <div className="space-y-2">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                    className="cursor-pointer"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {t('submit.image_hint')}
+                  </p>
+                  {imageError && (
+                    <p className="text-sm text-destructive">{imageError}</p>
+                  )}
+                  {imagePreview && (
+                    <div className="relative inline-block mt-2">
+                      <img
+                        src={imagePreview}
+                        alt={t('submit.image_preview')}
+                        className="max-w-full h-auto max-h-64 rounded-lg border border-border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-8 w-8"
+                        onClick={handleRemoveImage}
+                        aria-label={t('submit.remove_image')}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 

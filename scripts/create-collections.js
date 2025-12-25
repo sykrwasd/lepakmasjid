@@ -444,6 +444,16 @@ async function main() {
           required: true,
         },
         {
+          name: 'image',
+          type: 'file',
+          required: false,
+          options: {
+            maxSelect: 1,
+            maxSize: 5242880, // 5MB
+            mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+          },
+        },
+        {
           name: 'status',
           type: 'select',
           required: true,
