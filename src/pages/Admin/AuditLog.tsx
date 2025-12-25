@@ -24,7 +24,7 @@ const AuditLog = () => {
               ))}
             </div>
           ) : logs.length === 0 ? (
-            <p className="text-muted-foreground">No audit logs</p>
+            <p className="text-muted-foreground">{t('admin.no_audit_logs')}</p>
           ) : (
             <div className="space-y-4">
               {logs.map((log) => (
@@ -39,7 +39,7 @@ const AuditLog = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground">
-                      Entity: {log.entity_type} ({log.entity_id})
+                      {t('admin.entity')}: {log.entity_type} ({log.entity_id})
                     </p>
                   </CardContent>
                 </Card>

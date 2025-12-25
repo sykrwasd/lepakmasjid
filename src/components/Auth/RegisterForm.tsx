@@ -8,18 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').optional(),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  passwordConfirm: z.string().min(8, 'Password confirmation is required'),
+const createRegisterSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(2, t('form.name_min')).optional(),
+  email: z.string().email(t('form.invalid_email')),
+  password: z.string().min(8, t('form.password_min')),
+  passwordConfirm: z.string().min(8, t('form.password_required')),
 }).refine((data) => data.password === data.passwordConfirm, {
-  message: "Passwords don't match",
+  message: t('form.passwords_match'),
   path: ['passwordConfirm'],
 });
-
-type RegisterFormData = z.infer<typeof registerSchema>;
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -29,6 +28,10 @@ interface RegisterFormProps {
 export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const { register: registerUser, isLoading } = useAuthStore();
+  const { t } = useTranslation();
+  
+  const registerSchema = createRegisterSchema(t);
+  type RegisterFormData = z.infer<typeof registerSchema>;
   
   const {
     register,
@@ -44,7 +47,7 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       await registerUser(data.email, data.password, data.passwordConfirm, data.name);
       onSuccess?.();
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.message || t('auth.register_failed'));
     }
   };
 
@@ -57,11 +60,11 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="name">Name (Optional)</Label>
+        <Label htmlFor="name">{t('auth.name')}</Label>
         <Input
           id="name"
           type="text"
-          placeholder="Your name"
+          placeholder={t('form.name_placeholder')}
           {...register('name')}
           disabled={isLoading}
         />
@@ -71,11 +74,11 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t('auth.email')}</Label>
         <Input
           id="email"
           type="email"
-          placeholder="your@email.com"
+          placeholder={t('form.email_placeholder')}
           {...register('email')}
           disabled={isLoading}
         />
@@ -85,11 +88,11 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t('auth.password')}</Label>
         <Input
           id="password"
           type="password"
-          placeholder="••••••••"
+          placeholder={t('form.password_placeholder')}
           {...register('password')}
           disabled={isLoading}
         />
@@ -99,11 +102,11 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="passwordConfirm">Confirm Password</Label>
+        <Label htmlFor="passwordConfirm">{t('auth.password_confirm')}</Label>
         <Input
           id="passwordConfirm"
           type="password"
-          placeholder="••••••••"
+          placeholder={t('form.password_placeholder')}
           {...register('passwordConfirm')}
           disabled={isLoading}
         />
@@ -116,22 +119,22 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Registering...
+            {t('auth.registering')}
           </>
         ) : (
-          'Register'
+          t('auth.register')
         )}
       </Button>
 
       {onSwitchToLogin && (
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
+          {t('auth.have_account')}{' '}
           <button
             type="button"
             onClick={onSwitchToLogin}
             className="text-primary hover:underline"
           >
-            Login
+            {t('auth.login')}
           </button>
         </p>
       )}

@@ -8,13 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+const createLoginSchema = (t: (key: string) => string) => z.object({
+  email: z.string().email(t('form.invalid_email')),
+  password: z.string().min(8, t('form.password_min')),
 });
-
-type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -24,6 +23,10 @@ interface LoginFormProps {
 export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const { login, isLoading } = useAuthStore();
+  const { t } = useTranslation();
+  
+  const loginSchema = createLoginSchema(t);
+  type LoginFormData = z.infer<typeof loginSchema>;
   
   const {
     register,
@@ -39,7 +42,7 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
       await login(data.email, data.password);
       onSuccess?.();
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || t('auth.login_failed'));
     }
   };
 
@@ -52,11 +55,11 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t('auth.email')}</Label>
         <Input
           id="email"
           type="email"
-          placeholder="your@email.com"
+          placeholder={t('form.email_placeholder')}
           {...register('email')}
           disabled={isLoading}
         />
@@ -66,11 +69,11 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t('auth.password')}</Label>
         <Input
           id="password"
           type="password"
-          placeholder="••••••••"
+          placeholder={t('form.password_placeholder')}
           {...register('password')}
           disabled={isLoading}
         />
@@ -83,22 +86,22 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Logging in...
+            {t('auth.logging_in')}
           </>
         ) : (
-          'Login'
+          t('auth.login')
         )}
       </Button>
 
       {onSwitchToRegister && (
         <p className="text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
+          {t('auth.no_account')}{' '}
           <button
             type="button"
             onClick={onSwitchToRegister}
             className="text-primary hover:underline"
           >
-            Register
+            {t('auth.register')}
           </button>
         </p>
       )}

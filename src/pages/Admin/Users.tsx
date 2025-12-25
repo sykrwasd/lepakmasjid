@@ -17,18 +17,18 @@ const Users = () => {
   const handleBan = async (id: string) => {
     try {
       await banUser.mutateAsync(id);
-      toast.success('User banned');
+      toast.success(t('admin.user_banned'));
     } catch (error) {
-      toast.error('Failed to ban user');
+      toast.error(t('admin.ban_failed'));
     }
   };
 
   const handleUnban = async (id: string) => {
     try {
       await unbanUser.mutateAsync(id);
-      toast.success('User unbanned');
+      toast.success(t('admin.user_unbanned'));
     } catch (error) {
-      toast.error('Failed to unban user');
+      toast.error(t('admin.unban_failed'));
     }
   };
 
@@ -53,9 +53,9 @@ const Users = () => {
                       <CardTitle>{user.name || user.email}</CardTitle>
                       <div className="flex items-center gap-2">
                         <Badge variant={user.verified ? 'default' : 'destructive'}>
-                          {user.verified ? 'Active' : 'Banned'}
+                          {user.verified ? t('admin.active') : t('admin.banned')}
                         </Badge>
-                        <Badge variant="secondary">Trust: {user.trust_score}</Badge>
+                        <Badge variant="secondary">{t('admin.trust')}: {user.trust_score}</Badge>
                       </div>
                     </div>
                   </CardHeader>
@@ -69,7 +69,7 @@ const Users = () => {
                           onClick={() => handleBan(user.id)}
                           disabled={banUser.isPending}
                         >
-                          Ban
+                          {t('admin.ban')}
                         </Button>
                       ) : (
                         <Button
@@ -77,7 +77,7 @@ const Users = () => {
                           onClick={() => handleUnban(user.id)}
                           disabled={unbanUser.isPending}
                         >
-                          Unban
+                          {t('admin.unban')}
                         </Button>
                       )}
                     </div>

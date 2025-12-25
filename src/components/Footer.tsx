@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Github, Twitter, Mail } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="bg-secondary/30 border-t border-border">
       <div className="container-main py-12 lg:py-16">
@@ -17,7 +19,7 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-muted-foreground text-sm mb-4">
-              A community-maintained directory of mosques in Malaysia, focused on facilities, activities, and accessibility.
+              {t('footer.description')}
             </p>
             <div className="flex gap-3">
               <a 
@@ -46,21 +48,21 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Quick Links</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t('footer.quick_links')}</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/explore" className="text-muted-foreground hover:text-primary transition-colors">
-                  Explore Mosques
+                  {t('footer.explore_mosques')}
                 </Link>
               </li>
               <li>
-                <Link to="/contribute" className="text-muted-foreground hover:text-primary transition-colors">
-                  Add a Mosque
+                <Link to="/submit" className="text-muted-foreground hover:text-primary transition-colors">
+                  {t('footer.add_mosque')}
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About Us
+                  {t('footer.about_us')}
                 </Link>
               </li>
             </ul>
@@ -68,21 +70,21 @@ const Footer = () => {
 
           {/* Resources */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Resources</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t('footer.resources')}</h3>
             <ul className="space-y-3">
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  API Documentation
+                  {t('footer.api_docs')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contribution Guide
+                  {t('footer.contribution_guide')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  GitHub Repository
+                  {t('footer.github_repo')}
                 </a>
               </li>
             </ul>
@@ -90,21 +92,21 @@ const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Legal</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-3">
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
+                  {t('footer.privacy_policy')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Use
+                  {t('footer.terms_of_use')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Content Policy
+                  {t('footer.content_policy')}
                 </a>
               </li>
             </ul>
@@ -114,10 +116,10 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} lepakmasjid. Open source under AGPL license.
+            © {new Date().getFullYear()} lepakmasjid. {t('footer.copyright')}
           </p>
           <p className="text-sm text-muted-foreground">
-            Made with ❤️ by the Malaysian Muslim community
+            {t('footer.made_with')}
           </p>
         </div>
       </div>

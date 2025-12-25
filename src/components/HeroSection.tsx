@@ -1,6 +1,7 @@
 import { Search, MapPin, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface HeroSectionProps {
   searchQuery: string;
@@ -9,6 +10,8 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ searchQuery, onSearchChange, onSearch }: HeroSectionProps) => {
+  const { t } = useTranslation();
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch();
@@ -26,14 +29,14 @@ const HeroSection = ({ searchQuery, onSearchChange, onSearch }: HeroSectionProps
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 text-primary-foreground/90 text-sm font-medium mb-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
             <MapPin className="h-4 w-4" />
-            <span>Community-powered mosque directory</span>
+            <span>{t('hero.badge')}</span>
           </div>
 
           {/* Headline */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 animate-fade-up text-balance" style={{ animationDelay: '0.2s' }}>
-            Find Your Perfect{' '}
+            {t('hero.title')}{' '}
             <span className="relative">
-              Prayer Space
+              {t('hero.title_highlight')}
               <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
                 <path d="M2 8C50 2 150 2 198 8" stroke="hsl(var(--accent))" strokeWidth="4" strokeLinecap="round" />
               </svg>
@@ -42,7 +45,7 @@ const HeroSection = ({ searchQuery, onSearchChange, onSearch }: HeroSectionProps
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-primary-foreground/80 mb-10 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: '0.3s' }}>
-            Discover mosques with the facilities you need — WiFi, workspace, accessibility features, and more. Updated by the community, for the community.
+            {t('hero.subtitle')}
           </p>
 
           {/* Search Form */}
@@ -52,7 +55,7 @@ const HeroSection = ({ searchQuery, onSearchChange, onSearch }: HeroSectionProps
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search mosque name or location..."
+                  placeholder={t('hero.search_placeholder')}
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
                   className="pl-12 h-14 text-lg bg-background border-0 shadow-elevated placeholder:text-muted-foreground"
@@ -60,14 +63,14 @@ const HeroSection = ({ searchQuery, onSearchChange, onSearch }: HeroSectionProps
               </div>
               <Button type="submit" variant="accent" size="lg" className="h-14 px-8">
                 <Search className="h-5 w-5 mr-2" />
-                Search
+                {t('hero.search_button')}
               </Button>
             </div>
           </form>
 
           {/* Quick filters */}
           <div className="flex flex-wrap justify-center gap-2 mt-6 animate-fade-up" style={{ animationDelay: '0.5s' }}>
-            <span className="text-primary-foreground/60 text-sm">Popular:</span>
+            <span className="text-primary-foreground/60 text-sm">{t('hero.popular')}</span>
             {['WiFi', 'Working Space', 'OKU Friendly', 'Parking'].map((filter) => (
               <button
                 key={filter}

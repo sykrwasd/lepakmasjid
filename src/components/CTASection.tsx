@@ -1,7 +1,10 @@
 import { Plus, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/use-translation';
+import { Link } from 'react-router-dom';
 
 const CTASection = () => {
+  const { t } = useTranslation();
   return (
     <section className="py-16 lg:py-24 bg-primary pattern-islamic relative overflow-hidden">
       {/* Decorative elements */}
@@ -15,24 +18,26 @@ const CTASection = () => {
           </div>
 
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-6 text-balance">
-            Help Build the Largest Mosque Directory
+            {t('cta.title')}
           </h2>
 
           <p className="text-lg md:text-xl text-primary-foreground/80 mb-10 max-w-2xl mx-auto">
-            Know a mosque with great facilities? Contribute to our community directory and help travelers, remote workers, and the elderly find the perfect prayer space.
+            {t('cta.description')}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="accent" size="xl" className="shadow-elevated">
-              <Plus className="h-5 w-5 mr-2" />
-              Add a Mosque
+            <Button variant="accent" size="xl" className="shadow-elevated" asChild>
+              <Link to="/submit">
+                <Plus className="h-5 w-5 mr-2" />
+                {t('cta.add_mosque')}
+              </Link>
             </Button>
             <Button 
               variant="ghost" 
               size="xl" 
               className="text-primary-foreground border-2 border-primary-foreground/30 hover:bg-primary-foreground/10 hover:text-primary-foreground"
             >
-              Learn How to Contribute
+              {t('cta.learn_more')}
             </Button>
           </div>
         </div>

@@ -43,8 +43,8 @@ const MosqueDetail = () => {
         <Header />
         <main id="main-content" className="container-main py-8">
           <div className="text-center py-16">
-            <h1 className="text-2xl font-bold mb-4">Mosque not found</h1>
-            <Button onClick={() => navigate('/explore')}>Back to Explore</Button>
+            <h1 className="text-2xl font-bold mb-4">{t('mosque_detail.not_found')}</h1>
+            <Button onClick={() => navigate('/explore')}>{t('mosque_detail.back_to_explore')}</Button>
           </div>
         </main>
         <Footer />
@@ -172,8 +172,8 @@ const MosqueDetail = () => {
                               {activity.type === 'one_off' && activity.schedule_json?.date
                                 ? format(new Date(activity.schedule_json.date), 'PPP')
                                 : activity.type === 'recurring'
-                                ? 'Recurring'
-                                : 'Fixed schedule'}
+                                ? t('mosque_detail.recurring')
+                                : t('mosque_detail.fixed_schedule')}
                             </span>
                           </div>
                           {activity.schedule_json?.time && (

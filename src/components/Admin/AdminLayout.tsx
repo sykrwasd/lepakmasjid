@@ -30,7 +30,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
       <aside className="w-64 border-r border-border bg-card p-6">
-        <h2 className="font-display text-xl font-bold mb-6">Admin Panel</h2>
+        <h2 className="font-display text-xl font-bold mb-6">{t('admin.panel')}</h2>
         <nav className="space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon;

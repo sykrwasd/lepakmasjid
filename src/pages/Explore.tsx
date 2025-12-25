@@ -120,7 +120,7 @@ const Explore = () => {
                         size="icon"
                         onClick={() => setViewMode('grid')}
                         className="rounded-none"
-                        aria-label="Grid view"
+                        aria-label={t('explore.grid_view')}
                       >
                         <Grid className="h-4 w-4" />
                       </Button>
@@ -129,7 +129,7 @@ const Explore = () => {
                         size="icon"
                         onClick={() => setViewMode('list')}
                         className="rounded-none"
-                        aria-label="List view"
+                        aria-label={t('explore.list_view')}
                       >
                         <List className="h-4 w-4" />
                       </Button>
@@ -138,7 +138,7 @@ const Explore = () => {
                         size="icon"
                         onClick={() => setViewMode('map')}
                         className="rounded-none"
-                        aria-label="Map view"
+                        aria-label={t('explore.map_view')}
                       >
                         <MapIcon2 className="h-4 w-4" />
                       </Button>
@@ -150,7 +150,7 @@ const Explore = () => {
                 {error && (
                   <Alert variant="destructive" className="mb-6">
                     <AlertDescription>
-                      {error instanceof Error ? error.message : 'Failed to load mosques. Please check your connection to PocketBase.'}
+                      {error instanceof Error ? error.message : t('featured.error')}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -182,12 +182,12 @@ const Explore = () => {
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
                       <MapIcon className="h-8 w-8 text-destructive" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Connection Error</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">{t('explore.connection_error')}</h3>
                     <p className="text-muted-foreground mb-4">
-                      Unable to connect to the database. Please check your internet connection and try again.
+                      {t('explore.connection_error_message')}
                     </p>
                     <Button variant="outline" onClick={() => window.location.reload()}>
-                      Retry
+                      {t('explore.retry')}
                     </Button>
                   </div>
                 ) : viewMode === 'map' ? (
@@ -211,7 +211,7 @@ const Explore = () => {
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">{t('explore.no_results')}</h3>
                     <p className="text-muted-foreground mb-4">
-                      Try adjusting your search or filter criteria
+                      {t('explore.adjust_search')}
                     </p>
                     <Button variant="outline" onClick={clearFilters}>
                       {t('explore.clear_filters')}

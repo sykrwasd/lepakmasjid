@@ -175,10 +175,10 @@ const FilterSidebar = ({
             <Label className="text-base font-semibold">{t('filter.state')}</Label>
             <Select value={selectedState || 'all'} onValueChange={(value) => onStateChange(value === 'all' ? '' : value)}>
               <SelectTrigger className="w-full h-12">
-                <SelectValue placeholder="All states" />
+                <SelectValue placeholder={t('filter.all_states')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All states</SelectItem>
+                <SelectItem value="all">{t('filter.all_states')}</SelectItem>
                 {MALAYSIAN_STATES.map((state) => (
                   <SelectItem key={state} value={state}>
                     {state}
@@ -209,13 +209,13 @@ const FilterSidebar = ({
           <div className="space-y-3">
             <Label className="text-base font-semibold">{t('filter.amenities')}</Label>
             {amenitiesLoading ? (
-              <div className="text-sm text-muted-foreground">Loading amenities...</div>
+              <div className="text-sm text-muted-foreground">{t('filter.loading_amenities')}</div>
             ) : amenitiesError ? (
               <div className="text-sm text-destructive p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                {amenitiesError instanceof Error ? amenitiesError.message : 'Failed to load amenities'}
+                {amenitiesError instanceof Error ? amenitiesError.message : t('filter.error_amenities')}
               </div>
             ) : amenities.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No amenities available</div>
+              <div className="text-sm text-muted-foreground">{t('filter.no_amenities')}</div>
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {amenities.map((amenity) => {

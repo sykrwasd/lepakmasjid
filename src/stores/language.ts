@@ -6,20 +6,7 @@ type Language = 'en' | 'bm';
 interface LanguageState {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
 }
-
-// Simple translation function - will be enhanced with i18n files
-const translations: Record<string, Record<Language, string>> = {
-  'app.name': { en: 'LepakMasjid', bm: 'LepakMasjid' },
-  'nav.explore': { en: 'Explore', bm: 'Terokai' },
-  'nav.contribute': { en: 'Contribute', bm: 'Sumbang' },
-  'nav.about': { en: 'About', bm: 'Tentang' },
-  'nav.add_mosque': { en: 'Add Mosque', bm: 'Tambah Masjid' },
-  'auth.login': { en: 'Login', bm: 'Log Masuk' },
-  'auth.logout': { en: 'Logout', bm: 'Log Keluar' },
-  'auth.register': { en: 'Register', bm: 'Daftar' },
-};
 
 export const useLanguageStore = create<LanguageState>()(
   persist(
@@ -59,11 +46,6 @@ export const useLanguageStore = create<LanguageState>()(
           window.history.replaceState({}, '', url.toString());
           
           // Persist to localStorage (handled by persist middleware)
-        },
-        
-        t: (key: string) => {
-          const lang = get().language;
-          return translations[key]?.[lang] || key;
         },
       };
     },

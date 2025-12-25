@@ -20,21 +20,21 @@ const Submissions = () => {
     if (!user) return;
     try {
       await approveSubmission.mutateAsync({ id, reviewedBy: user.id });
-      toast.success('Submission approved');
+      toast.success(t('admin.submission_approved'));
     } catch (error) {
-      toast.error('Failed to approve submission');
+      toast.error(t('admin.approve_failed'));
     }
   };
 
   const handleReject = async (id: string) => {
     if (!user) return;
-    const reason = prompt('Rejection reason:');
+    const reason = prompt(t('admin.rejection_reason'));
     if (!reason) return;
     try {
       await rejectSubmission.mutateAsync({ id, reviewedBy: user.id, reason });
-      toast.success('Submission rejected');
+      toast.success(t('admin.submission_rejected'));
     } catch (error) {
-      toast.error('Failed to reject submission');
+      toast.error(t('admin.reject_failed'));
     }
   };
 
@@ -51,7 +51,7 @@ const Submissions = () => {
               ))}
             </div>
           ) : submissions.length === 0 ? (
-            <p className="text-muted-foreground">No pending submissions</p>
+            <p className="text-muted-foreground">{t('admin.no_pending_submissions')}</p>
           ) : (
             <div className="space-y-4">
               {submissions.map((submission) => (
@@ -59,16 +59,16 @@ const Submissions = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle>
-                        {submission.type === 'new_mosque' ? 'New Mosque' : 'Edit Proposal'}
+                        {submission.type === 'new_mosque' ? t('admin.new_mosque') : t('admin.edit_proposal')}
                       </CardTitle>
                       <Badge variant="secondary">{submission.status}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 mb-4">
-                      <p><strong>Name:</strong> {(submission.data as any).name}</p>
-                      <p><strong>Address:</strong> {(submission.data as any).address}</p>
-                      <p><strong>State:</strong> {(submission.data as any).state}</p>
+                      <p><strong>{t('mosque.name')}:</strong> {(submission.data as any).name}</p>
+                      <p><strong>{t('mosque.address')}:</strong> {(submission.data as any).address}</p>
+                      <p><strong>{t('mosque.state')}:</strong> {(submission.data as any).state}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button

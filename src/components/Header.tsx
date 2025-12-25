@@ -88,7 +88,7 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 onClick={handleToggleTheme}
-                aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                aria-label={isDark ? t('common.switch_light') : t('common.switch_dark')}
               >
                 {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
@@ -96,7 +96,7 @@ const Header = () => {
               {isAuthenticated ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="User menu">
+                    <Button variant="ghost" size="icon" aria-label={t('common.user_menu')}>
                       <User className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -143,7 +143,7 @@ const Header = () => {
                 size="icon"
                 className="md:hidden"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Toggle menu"
+                aria-label={t('common.toggle_menu')}
               >
                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>

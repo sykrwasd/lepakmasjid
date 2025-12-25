@@ -7,10 +7,12 @@ import FeaturedMosques from '@/components/FeaturedMosques';
 import CTASection from '@/components/CTASection';
 import Footer from '@/components/Footer';
 import { SkipLink } from '@/components/SkipLink';
+import { useTranslation } from '@/hooks/use-translation';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -24,10 +26,10 @@ const Index = () => {
     <>
       <SkipLink />
       <Helmet>
-        <title>lepakmasjid - Find Mosques with Facilities You Need</title>
+        <title>{t('meta.home_title')}</title>
         <meta 
           name="description" 
-          content="Discover mosques in Malaysia with WiFi, working spaces, accessibility features, and more. Community-powered mosque directory for travelers and remote workers." 
+          content={t('meta.home_description')} 
         />
         <meta name="keywords" content="mosque, masjid, Malaysia, prayer space, WiFi, working space, accessibility, halal, Muslim" />
         <link rel="canonical" href="https://lepakmasjid.my" />
