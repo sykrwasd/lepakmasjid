@@ -19,7 +19,8 @@ If you're in a hurry, here's the TL;DR:
 
 4. **Set build settings:**
    - Build command: `pnpm build` (or `npm run build`)
-   - Output directory: `dist`
+   - **Root directory**: `/` (or empty) ⚠️ **NOT `dist`!**
+   - **Build output directory**: `dist`
 
 5. **Add environment variables:**
    - `VITE_POCKETBASE_URL=https://pb.muazhazali.me`
@@ -87,9 +88,17 @@ git push -u origin main
    - **Project name**: `lepakmasjid` (or your preferred name)
    - **Production branch**: `main` (or `master`)
    - **Framework preset**: `Vite` (or `None` if Vite is not listed)
-   - **Build command**: `pnpm build` (or `npm run build` if using npm)
-   - **Build output directory**: `dist`
-   - **Root directory**: `/` (leave as default)
+   - **Build command**: `pnpm install && pnpm build` (or `npm install && npm run build`)
+   - **Build output directory**: `dist` ⚠️ **This is where built files go**
+   - **Root directory**: `/` ⚠️ **This must be `/` or empty (NOT `dist`!)**
+   - **Deploy command**: ⚠️ **Leave this EMPTY/BLANK** (Cloudflare auto-deploys build output)
+   
+   **⚠️ CRITICAL:** 
+   - **Root directory** = Where your source code is located (use `/` or leave empty)
+   - **Build output directory** = Where Vite outputs built files (use `dist`)
+   - **Deploy command** = Leave empty! Cloudflare automatically deploys from `dist`
+   - **DO NOT** set root directory to `dist` - this will cause "root directory not found" error
+   - **DO NOT** set deploy command to `pnpm deploy` - this will fail (not a workspace)
    
    **Important:** If you have `bun.lockb` in your repository, Cloudflare may auto-detect Bun. To force pnpm/npm, see the troubleshooting section below.
 
@@ -288,6 +297,20 @@ You can configure when deployments happen:
 
 ### Build Fails
 
+**Error: "root directory not found"**
+
+This happens when the root directory is incorrectly set to `dist` instead of `/`.
+
+**Fix:**
+1. Go to **Settings → Builds & deployments**
+2. Set **Root directory** to `/` (or leave it empty/blank)
+3. Keep **Build output directory** as `dist`
+4. Save and retry deployment
+
+**Remember:**
+- Root directory = Where source code is (`/` or empty)
+- Build output directory = Where built files go (`dist`)
+
 **Error: "Command failed"**
 
 - Check build logs in Cloudflare dashboard
@@ -305,6 +328,18 @@ You can configure when deployments happen:
 - Ensure variables are prefixed with `VITE_`
 - Check that variables are set in the correct environment (Production/Preview)
 - Trigger a new deployment after adding variables
+
+**Error: "ERR_PNPM_CANNOT_DEPLOY - A deploy is only possible from inside a workspace"**
+
+This happens when the deploy command is set to `pnpm deploy`, but your project is not a pnpm workspace.
+
+**Fix:**
+1. Go to **Settings → Builds & deployments**
+2. Find **"Deploy command"** field
+3. **Clear it completely** (leave it empty/blank)
+4. Save and retry deployment
+
+**Why:** Cloudflare Pages automatically deploys whatever is in your build output directory (`dist`). The deploy command is only needed for custom deployment scripts, which you don't need for a standard Vite build.
 
 **Error: "lockfile had changes, but lockfile is frozen" or Bun detection issues**
 

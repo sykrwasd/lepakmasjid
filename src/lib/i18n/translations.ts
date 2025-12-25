@@ -77,6 +77,14 @@ export const translations = {
     'admin.approve': 'Approve',
     'admin.reject': 'Reject',
     'admin.rejection_reason': 'Rejection Reason',
+    'admin.rejection_reason_placeholder': 'Please provide a reason for rejection...',
+    'admin.submission_approved': 'Submission approved',
+    'admin.submission_rejected': 'Submission rejected',
+    'admin.approve_failed': 'Failed to approve submission',
+    'admin.reject_failed': 'Failed to reject submission',
+    'admin.new_mosque': 'New Mosque',
+    'admin.edit_proposal': 'Edit Proposal',
+    'admin.no_pending_submissions': 'No pending submissions',
     
     // Accessibility
     'accessibility.font_size': 'Font Size',
@@ -165,6 +173,8 @@ export const translations = {
     'form.address_required': 'Address is required',
     'form.address_min': 'Address is required',
     'form.state_required': 'State is required',
+    'form.lat_range': 'Latitude must be between -90 and 90',
+    'form.lng_range': 'Longitude must be between -180 and 180',
     
     // Auth Messages
     'auth.login_failed': 'Login failed. Please check your credentials.',
@@ -294,6 +304,7 @@ export const translations = {
     'admin.approve': 'Luluskan',
     'admin.reject': 'Tolak',
     'admin.rejection_reason': 'Sebab Penolakan',
+    'admin.rejection_reason_placeholder': 'Sila berikan sebab penolakan...',
     
     // Accessibility
     'accessibility.font_size': 'Saiz Fon',
@@ -382,6 +393,8 @@ export const translations = {
     'form.address_required': 'Alamat diperlukan',
     'form.address_min': 'Alamat diperlukan',
     'form.state_required': 'Negeri diperlukan',
+    'form.lat_range': 'Latitud mestilah antara -90 dan 90',
+    'form.lng_range': 'Longitud mestilah antara -180 dan 180',
     
     // Auth Messages
     'auth.login_failed': 'Log masuk gagal. Sila semak kelayakan anda.',

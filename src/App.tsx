@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Explore from "./pages/Explore";
 import MosqueDetail from "./pages/MosqueDetail";
 import Submit from "./pages/Submit";
+import AuthCallback from "./pages/AuthCallback";
 import Dashboard from "./pages/Admin/Dashboard";
 import Submissions from "./pages/Admin/Submissions";
 import Mosques from "./pages/Admin/Mosques";
@@ -41,6 +42,7 @@ const App = () => {
               <Route path="/explore" element={<Explore />} />
               <Route path="/mosque/:id" element={<MosqueDetail />} />
               <Route path="/submit" element={<Submit />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* Admin routes */}
               <Route path="/admin" element={<Dashboard />} />

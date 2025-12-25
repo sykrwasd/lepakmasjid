@@ -58,6 +58,30 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = "Chart";
 
+/**
+ * Sanitizes CSS color values to prevent XSS
+ * Removes dangerous characters that could be used for injection
+ */
+function sanitizeCSSValue(value: string): string {
+  if (!value || typeof value !== 'string') {
+    return '';
+  }
+  // Remove potentially dangerous characters: < > ' " and backslash
+  // Allow only safe CSS color formats (hex, rgb, rgba, hsl, named colors)
+  return value.replace(/[<>'"\\]/g, '').trim();
+}
+
+/**
+ * Sanitizes CSS variable key names to prevent injection
+ */
+function sanitizeCSSKey(key: string): string {
+  if (!key || typeof key !== 'string') {
+    return '';
+  }
+  // Only allow alphanumeric, dash, and underscore for CSS variable names
+  return key.replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(([_, config]) => config.theme || config.color);
 
@@ -65,18 +89,26 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
+  // Sanitize chart ID to prevent injection
+  const sanitizedId = sanitizeCSSKey(id);
+
   return (
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
           .map(
             ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+${prefix} [data-chart=${sanitizedId}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
+    if (!color) return null;
+    // Sanitize both key and color value to prevent XSS
+    const sanitizedKey = sanitizeCSSKey(key);
+    const sanitizedColor = sanitizeCSSValue(String(color));
+    return sanitizedKey && sanitizedColor ? `  --color-${sanitizedKey}: ${sanitizedColor};` : null;
   })
+  .filter(Boolean)
   .join("\n")}
 }
 `,

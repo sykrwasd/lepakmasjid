@@ -2,6 +2,8 @@ import { pb } from '../pocketbase';
 import type { Mosque, MosqueFilters, MosqueWithDetails } from '@/types';
 import type { Amenity, MosqueAmenity, Activity } from '@/types';
 import { createFormDataWithImage, validateImageFile } from '../pocketbase-images';
+import { validateState, sanitizeSearchTerm } from '../validation';
+import { sanitizeError } from '../error-handler';
 
 // Helper function to fetch and attach amenities to mosques
 async function attachAmenitiesToMosques(mosques: Mosque[]): Promise<Mosque[]> {
@@ -77,6 +79,10 @@ export const mosquesApi = {
       
       if (filters) {
         if (filters.state && filters.state !== 'all') {
+          // Validate state against allowlist to prevent filter injection
+          if (!validateState(filters.state)) {
+            throw new Error('Invalid state parameter');
+          }
           filterParts.push(`state = "${filters.state}"`);
         }
         
@@ -86,10 +92,11 @@ export const mosquesApi = {
         }
         
         if (filters.search && filters.search.trim()) {
-          const searchLower = filters.search.toLowerCase().trim();
-          // Escape quotes in search term to prevent filter syntax errors
-          const escapedSearch = searchLower.replace(/"/g, '\\"');
-          filterParts.push(`(name ~ "${escapedSearch}" || address ~ "${escapedSearch}" || state ~ "${escapedSearch}")`);
+          // Sanitize search term to prevent filter injection
+          const sanitizedSearch = sanitizeSearchTerm(filters.search);
+          if (sanitizedSearch) {
+            filterParts.push(`(name ~ "${sanitizedSearch}" || address ~ "${sanitizedSearch}" || state ~ "${sanitizedSearch}")`);
+          }
         }
       }
       
@@ -116,13 +123,19 @@ export const mosquesApi = {
           
           if (filters) {
             if (filters.state && filters.state !== 'all') {
+              // Validate state against allowlist to prevent filter injection
+              if (!validateState(filters.state)) {
+                throw new Error('Invalid state parameter');
+              }
               filterPartsNoStatus.push(`state = "${filters.state}"`);
             }
             
             if (filters.search && filters.search.trim()) {
-              const searchLower = filters.search.toLowerCase().trim();
-              const escapedSearch = searchLower.replace(/"/g, '\\"');
-              filterPartsNoStatus.push(`(name ~ "${escapedSearch}" || address ~ "${escapedSearch}" || state ~ "${escapedSearch}")`);
+              // Sanitize search term to prevent filter injection
+              const sanitizedSearch = sanitizeSearchTerm(filters.search);
+              if (sanitizedSearch) {
+                filterPartsNoStatus.push(`(name ~ "${sanitizedSearch}" || address ~ "${sanitizedSearch}" || state ~ "${sanitizedSearch}")`);
+              }
             }
           }
           
@@ -189,21 +202,8 @@ export const mosquesApi = {
         }
       }
     } catch (error: any) {
-      console.error('Error fetching mosques:', error);
-      
-      // Log detailed error information
-      if (error.data) {
-        console.error('Error data:', JSON.stringify(error.data, null, 2));
-      }
-      if (error.response) {
-        console.error('Error response:', error.response);
-      }
-      
-      throw new Error(
-        error.data?.message || 
-        error.message || 
-        'Failed to fetch mosques. Please check your connection and verify the collection exists.'
-      );
+      // Sanitize error to prevent information disclosure
+      throw sanitizeError(error);
     }
   },
 
@@ -211,6 +211,11 @@ export const mosquesApi = {
   async get(id: string): Promise<MosqueWithDetails> {
     try {
       const mosque = await pb.collection('mosques').getOne(id) as unknown as Mosque;
+      
+      // Validate ID format to prevent injection
+      if (!/^[a-zA-Z0-9]{15}$/.test(id)) {
+        throw new Error('Invalid mosque ID format');
+      }
       
       // Fetch related amenities
       const amenitiesResult = await pb.collection('mosque_amenities').getList(1, 100, {
@@ -252,11 +257,11 @@ export const mosquesApi = {
         activities,
       };
     } catch (error: any) {
-      console.error('Error fetching mosque details:', error);
+      // Sanitize error to prevent information disclosure
       if (error.status === 404) {
         throw new Error('Mosque not found');
       }
-      throw new Error(error.message || 'Failed to fetch mosque details. Please check your connection.');
+      throw sanitizeError(error);
     }
   },
 

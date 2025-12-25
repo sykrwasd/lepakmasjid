@@ -24,8 +24,12 @@ const createMosqueSchema = (t: (key: string) => string) => z.object({
   name_bm: z.string().optional(),
   address: z.string().min(5, t('form.address_min')),
   state: z.string().min(1, t('form.state_required')),
-  lat: z.number(),
-  lng: z.number(),
+  lat: z.number()
+    .min(-90, t('form.lat_range'))
+    .max(90, t('form.lat_range')),
+  lng: z.number()
+    .min(-180, t('form.lng_range'))
+    .max(180, t('form.lng_range')),
   description: z.string().optional(),
   description_bm: z.string().optional(),
 });

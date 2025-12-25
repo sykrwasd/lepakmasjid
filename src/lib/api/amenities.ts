@@ -1,5 +1,6 @@
 import { pb } from '../pocketbase';
 import type { Amenity } from '@/types';
+import { sanitizeError } from '../error-handler';
 
 export const amenitiesApi = {
   // List all amenities
@@ -10,12 +11,11 @@ export const amenitiesApi = {
       });
       return result.items as unknown as Amenity[];
     } catch (error: any) {
-      console.error('Error fetching amenities:', error);
-      // If 403 Forbidden, the collection permissions need to be set to allow public read
+      // Sanitize error to prevent information disclosure
       if (error.status === 403) {
-        throw new Error('Amenities collection is not publicly accessible. Please configure PocketBase permissions to allow public read access.');
+        throw new Error('Access denied. Please check your permissions.');
       }
-      throw new Error(error.message || 'Failed to fetch amenities. Please check your connection.');
+      throw sanitizeError(error);
     }
   },
 
