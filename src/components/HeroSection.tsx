@@ -34,13 +34,7 @@ const HeroSection = ({ searchQuery, onSearchChange, onSearch }: HeroSectionProps
 
           {/* Headline */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 animate-fade-up text-balance" style={{ animationDelay: '0.2s' }}>
-            {t('hero.title')}{' '}
-            <span className="relative">
-              {t('hero.title_highlight')}
-              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
-                <path d="M2 8C50 2 150 2 198 8" stroke="hsl(var(--accent))" strokeWidth="4" strokeLinecap="round" />
-              </svg>
-            </span>
+            {t('hero.title')}
           </h1>
 
           {/* Subtitle */}

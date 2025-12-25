@@ -86,9 +86,9 @@ export const translations = {
     
     // Hero Section
     'hero.badge': 'Community-powered mosque directory',
-    'hero.title': 'Find Your Perfect',
-    'hero.title_highlight': 'Prayer Space',
-    'hero.subtitle': 'Discover mosques with the facilities you need — WiFi, workspace, accessibility features, and more. Updated by the community, for the community.',
+    'hero.title': 'Relax, Pray & Take Part in Mosque Activities',
+    'hero.title_highlight': 'Prayer Space', // Deprecated - kept for backward compatibility
+    'hero.subtitle': 'Discover mosques with the facilities you need — WiFi, workspace, sports facilities, and more. Updated by the community, for the community.',
     'hero.search_placeholder': 'Search mosque name or location...',
     'hero.search_button': 'Search',
     'hero.popular': 'Popular:',
@@ -303,9 +303,9 @@ export const translations = {
     
     // Hero Section
     'hero.badge': 'Direktori masjid dikuasakan komuniti',
-    'hero.title': 'Cari Ruang',
-    'hero.title_highlight': 'Solat Sempurna Anda',
-    'hero.subtitle': 'Temui masjid dengan kemudahan yang anda perlukan — WiFi, ruang kerja, ciri aksesibiliti, dan banyak lagi. Dikemaskini oleh komuniti, untuk komuniti.',
+    'hero.title': 'Lepak, Solat & Beraktiviti di Masjid',
+    'hero.title_highlight': 'Solat Sempurna Anda', // Deprecated - kept for backward compatibility
+    'hero.subtitle': 'Temui masjid dengan kemudahan yang anda perlukan — WiFi, ruang kerja, kemudahan sukan, dan banyak lagi. Dikemaskini oleh komuniti, untuk komuniti.',
     'hero.search_placeholder': 'Cari nama masjid atau lokasi...',
     'hero.search_button': 'Cari',
     'hero.popular': 'Popular:',
