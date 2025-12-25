@@ -10,6 +10,7 @@ export interface Mosque {
   lng: number;
   description?: string;
   description_bm?: string;
+  image?: string | File | string[]; // File field: string (filename) or File (for upload) or array if multiple
   status: 'pending' | 'approved' | 'rejected';
   created_by: string;
   created: string;
@@ -85,6 +86,7 @@ export interface User {
   avatar?: string;
   verified: boolean;
   trust_score: number;
+  role?: 'user' | 'admin';
   created: string;
   updated: string;
 }

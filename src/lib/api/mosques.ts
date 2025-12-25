@@ -1,6 +1,7 @@
 import { pb } from '../pocketbase';
 import type { Mosque, MosqueFilters, MosqueWithDetails } from '@/types';
 import type { Amenity, MosqueAmenity, Activity } from '@/types';
+import { createFormDataWithImage, validateImageFile } from '../pocketbase-images';
 
 // Helper function to fetch and attach amenities to mosques
 async function attachAmenitiesToMosques(mosques: Mosque[]): Promise<Mosque[]> {
@@ -260,12 +261,42 @@ export const mosquesApi = {
   },
 
   // Create mosque (for submissions)
-  async create(data: Partial<Mosque>): Promise<Mosque> {
+  async create(data: Partial<Mosque>, imageFile?: File): Promise<Mosque> {
+    // If image file is provided, validate it first
+    if (imageFile) {
+      const validationError = validateImageFile(imageFile);
+      if (validationError) {
+        throw new Error(validationError);
+      }
+    }
+
+    // If we have an image file, use FormData
+    if (imageFile) {
+      const formData = createFormDataWithImage(data, imageFile, 'image');
+      return await pb.collection('mosques').create(formData) as unknown as Mosque;
+    }
+
+    // Otherwise, create normally
     return await pb.collection('mosques').create(data) as unknown as Mosque;
   },
 
   // Update mosque
-  async update(id: string, data: Partial<Mosque>): Promise<Mosque> {
+  async update(id: string, data: Partial<Mosque>, imageFile?: File): Promise<Mosque> {
+    // If image file is provided, validate it first
+    if (imageFile) {
+      const validationError = validateImageFile(imageFile);
+      if (validationError) {
+        throw new Error(validationError);
+      }
+    }
+
+    // If we have an image file, use FormData
+    if (imageFile) {
+      const formData = createFormDataWithImage(data, imageFile, 'image');
+      return await pb.collection('mosques').update(id, formData) as unknown as Mosque;
+    }
+
+    // Otherwise, update normally
     return await pb.collection('mosques').update(id, data) as unknown as Mosque;
   },
 

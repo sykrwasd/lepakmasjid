@@ -13,6 +13,8 @@
     "test:schema": "node scripts/verify-schema.js",
     "test:submission": "node scripts/test-submission.js",
     "setup:collections": "node scripts/create-collections.js",
+    "setup:role-field": "node scripts/add-role-field.js",
+    "setup:admin": "node scripts/set-admin-role.js",
     "fix:permissions": "node scripts/fix-permissions.js",
     "seed:data": "node scripts/seed-data.js"
   },

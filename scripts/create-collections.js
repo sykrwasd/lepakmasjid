@@ -116,6 +116,14 @@ function formatField(field, collectionIdMap) {
       values: field.values || field.options?.values || [],
       maxSelect: field.maxSelect || field.options?.maxSelect || 1,
     };
+  } else if (field.type === 'file') {
+    // For file fields, preserve options
+    return {
+      name: field.name,
+      type: 'file',
+      required: field.required || false,
+      options: field.options || {},
+    };
   } else {
     // For other field types
     const cleanField = { ...field };
@@ -258,8 +266,8 @@ async function main() {
         'CREATE UNIQUE INDEX idx_amenities_key ON amenities (key)',
       ],
       rules: {
-        listRule: null, // Public read
-        viewRule: null, // Public read
+        listRule: '', // Public read
+        viewRule: '', // Public read
         createRule: '@request.auth.id != ""',
         updateRule: '@request.auth.id != ""',
         deleteRule: '@request.auth.id != ""',
@@ -277,6 +285,16 @@ async function main() {
         { name: 'lng', type: 'number', required: true },
         { name: 'description', type: 'text', required: false },
         { name: 'description_bm', type: 'text', required: false },
+        {
+          name: 'image',
+          type: 'file',
+          required: false,
+          options: {
+            maxSelect: 1,
+            maxSize: 5242880, // 5MB in bytes
+            mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+          },
+        },
         {
           name: 'status',
           type: 'select',
@@ -298,11 +316,11 @@ async function main() {
         'CREATE INDEX idx_mosques_location ON mosques (lat, lng)',
       ],
       rules: {
-        listRule: 'status = "approved" || @request.auth.id != ""',
-        viewRule: 'status = "approved" || @request.auth.id != ""',
+        listRule: 'status = "approved" || (created_by = @request.auth.id && @request.auth.id != "") || @request.auth.role = "admin"',
+        viewRule: 'status = "approved" || (created_by = @request.auth.id && @request.auth.id != "") || @request.auth.role = "admin"',
         createRule: '@request.auth.id != ""',
-        updateRule: '@request.auth.id != ""',
-        deleteRule: '@request.auth.id != ""',
+        updateRule: 'created_by = @request.auth.id || @request.auth.role = "admin"',
+        deleteRule: '@request.auth.role = "admin"',
       },
     },
     {
@@ -339,8 +357,8 @@ async function main() {
         'CREATE INDEX idx_mosque_amenities_amenity ON mosque_amenities (amenity_id)',
       ],
       rules: {
-        listRule: null, // Public read
-        viewRule: null, // Public read
+        listRule: '', // Public read
+        viewRule: '', // Public read
         createRule: '@request.auth.id != ""',
         updateRule: '@request.auth.id != ""',
         deleteRule: '@request.auth.id != ""',
@@ -395,11 +413,11 @@ async function main() {
         'CREATE INDEX idx_activities_status ON activities (status)',
       ],
       rules: {
-        listRule: null, // Public read
-        viewRule: null, // Public read
+        listRule: '', // Public read
+        viewRule: '', // Public read
         createRule: '@request.auth.id != ""',
-        updateRule: '@request.auth.id != "" && created_by = @request.auth.id',
-        deleteRule: '@request.auth.id != "" && created_by = @request.auth.id',
+        updateRule: 'created_by = @request.auth.id || @request.auth.role = "admin"',
+        deleteRule: 'created_by = @request.auth.id || @request.auth.role = "admin"',
       },
     },
     {
@@ -456,11 +474,11 @@ async function main() {
         'CREATE INDEX idx_submissions_submitted_at ON submissions (submitted_at)',
       ],
       rules: {
-        listRule: '@request.auth.id != "" && (submitted_by = @request.auth.id || @request.auth.id != "")',
-        viewRule: '@request.auth.id != "" && (submitted_by = @request.auth.id || @request.auth.id != "")',
+        listRule: 'submitted_by = @request.auth.id || @request.auth.role = "admin"',
+        viewRule: 'submitted_by = @request.auth.id || @request.auth.role = "admin"',
         createRule: '@request.auth.id != ""',
-        updateRule: '@request.auth.id != ""',
-        deleteRule: '@request.auth.id != ""',
+        updateRule: '@request.auth.role = "admin"',
+        deleteRule: '@request.auth.role = "admin"',
       },
     },
     {
@@ -489,11 +507,11 @@ async function main() {
         'CREATE INDEX idx_audit_logs_timestamp ON audit_logs (timestamp)',
       ],
       rules: {
-        listRule: '@request.auth.id != ""', // Admin only (should be more restrictive)
-        viewRule: '@request.auth.id != ""', // Admin only
-        createRule: null, // System can create
+        listRule: '@request.auth.role = "admin"',
+        viewRule: '@request.auth.role = "admin"',
+        createRule: '', // System can create
         updateRule: null, // No updates allowed
-        deleteRule: '@request.auth.id != ""', // Admin only
+        deleteRule: '@request.auth.role = "admin"',
       },
     },
   ];
