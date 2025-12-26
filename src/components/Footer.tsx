@@ -23,7 +23,9 @@ const Footer = () => {
             </p>
             <div className="flex gap-3">
               <a 
-                href="#" 
+                href="https://github.com/muazhazali/lepakmasjid" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-secondary hover:bg-primary hover:text-primary-foreground transition-colors"
                 aria-label="GitHub"
               >
@@ -78,12 +80,12 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t('footer.contribution_guide')}
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <a 
+                  href="https://github.com/muazhazali/lepakmasjid" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
                   {t('footer.github_repo')}
                 </a>
               </li>
@@ -95,19 +97,19 @@ const Footer = () => {
             <h3 className="font-semibold text-foreground mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
                   {t('footer.privacy_policy')}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
                   {t('footer.terms_of_use')}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/content-policy" className="text-muted-foreground hover:text-primary transition-colors">
                   {t('footer.content_policy')}
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

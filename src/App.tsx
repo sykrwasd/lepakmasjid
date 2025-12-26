@@ -9,6 +9,10 @@ import Index from "./pages/Index";
 import Explore from "./pages/Explore";
 import MosqueDetail from "./pages/MosqueDetail";
 import Submit from "./pages/Submit";
+import About from "./pages/About";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
+import ContentPolicy from "./pages/ContentPolicy";
 import AuthCallback from "./pages/AuthCallback";
 import Dashboard from "./pages/Admin/Dashboard";
 import Submissions from "./pages/Admin/Submissions";
@@ -42,6 +46,10 @@ const App = () => {
               <Route path="/explore" element={<Explore />} />
               <Route path="/mosque/:id" element={<MosqueDetail />} />
               <Route path="/submit" element={<Submit />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfUse />} />
+              <Route path="/content-policy" element={<ContentPolicy />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* Admin routes */}
