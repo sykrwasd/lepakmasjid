@@ -49,3 +49,14 @@ export const useUnbanUser = () => {
   });
 };
 
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<User> }) => usersApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: usersKeys.all });
+    },
+  });
+};
+

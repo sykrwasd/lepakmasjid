@@ -299,6 +299,61 @@ export const mosquesApi = {
     return true;
   },
 
+  // List all mosques for admin (including pending and rejected)
+  async listAll(): Promise<Mosque[]> {
+    try {
+      // Fetch all mosques using pagination to avoid 400 errors
+      const allItems: any[] = [];
+      let page = 1;
+      const perPage = 100; // Reasonable page size
+      let hasMore = true;
+      
+      while (hasMore) {
+        // Try with sort first, fallback without sort if it fails
+        let result;
+        try {
+          result = await pb.collection('mosques').getList(page, perPage, {
+            sort: '-created',
+          });
+        } catch (sortError: any) {
+          // If sort fails, try without sort
+          console.warn('Sort failed, trying without sort:', sortError);
+          result = await pb.collection('mosques').getList(page, perPage);
+        }
+        
+        allItems.push(...result.items);
+        
+        // Check if there are more pages
+        hasMore = result.page < result.totalPages;
+        page++;
+      }
+      
+      // Sort client-side if server-side sort failed
+      if (allItems.length > 0 && !allItems[0].created) {
+        // If no created field, skip sorting
+      } else {
+        allItems.sort((a, b) => {
+          const aDate = new Date(a.created || 0).getTime();
+          const bDate = new Date(b.created || 0).getTime();
+          return bDate - aDate; // Newest first
+        });
+      }
+      
+      const items = allItems as unknown as Mosque[];
+      
+      // Fetch and attach amenities to mosques
+      return await attachAmenitiesToMosques(items);
+    } catch (error: any) {
+      console.error('Failed to fetch all mosques:', {
+        status: error.status,
+        message: error.message,
+        data: error.data,
+      });
+      
+      throw sanitizeError(error);
+    }
+  },
+
   // Helper to get sort string
   getSortString(sortBy?: string): string {
     switch (sortBy) {
