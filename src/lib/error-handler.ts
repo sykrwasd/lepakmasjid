@@ -12,15 +12,37 @@
 export function sanitizeError(error: unknown): Error {
   const isProduction = import.meta.env.PROD;
   
-  // Log detailed error server-side (console in production, but not exposed to user)
-  if (error instanceof Error) {
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-    });
+  // In production, minimize console logging to prevent information disclosure
+  // Detailed errors should be sent to external error tracking service (Sentry, etc.)
+  if (isProduction) {
+    // Only log sanitized error messages in production
+    // Stack traces and detailed error objects are not logged to console
+    if (error instanceof Error) {
+      // Log only the error type and a sanitized message (no stack traces)
+      const sanitizedMessage = error.message
+        .replace(/[^\w\s.,!?-]/g, '') // Remove special characters that might leak info
+        .substring(0, 100); // Limit length
+      console.error('Error:', sanitizedMessage);
+      
+      // TODO: Send to error tracking service (Sentry, LogRocket, etc.)
+      // Example:
+      // if (window.Sentry) {
+      //   window.Sentry.captureException(error);
+      // }
+    } else {
+      console.error('An error occurred');
+    }
   } else {
-    console.error('Error details:', error);
+    // Development: full error details for debugging
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
+    } else {
+      console.error('Error details:', error);
+    }
   }
   
   // In production, return generic error messages

@@ -1,6 +1,14 @@
 import PocketBase from 'pocketbase';
 
-const POCKETBASE_URL = import.meta.env.VITE_POCKETBASE_URL || 'https://pb.muazhazali.me';
+// Require environment variable - no hardcoded fallback for security
+const POCKETBASE_URL = import.meta.env.VITE_POCKETBASE_URL;
+
+if (!POCKETBASE_URL) {
+  throw new Error(
+    'VITE_POCKETBASE_URL environment variable is required. ' +
+    'Please set it in your .env.local file or deployment environment variables.'
+  );
+}
 
 // Create a singleton instance
 let pbInstance: PocketBase | null = null;

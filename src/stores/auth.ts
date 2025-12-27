@@ -3,14 +3,20 @@ import { pb, getCurrentUser, isAdmin } from '@/lib/pocketbase';
 import type { User } from '@/types';
 import { checkRateLimit, resetRateLimit, getRemainingAttempts, getResetTime } from '@/lib/rate-limit';
 
+type OAuthStatus = 'idle' | 'loading' | 'success' | 'error';
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
+  oauthStatus: OAuthStatus;
+  oauthMessage: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, passwordConfirm: string, name?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  clearOAuthStatus: () => void;
+  setOAuthError: (message: string) => void;
   logout: () => void;
   checkAuth: () => void;
 }
@@ -40,6 +46,8 @@ export const useAuthStore = create<AuthState>((set) => {
     isAuthenticated: !!getCurrentUser(),
     isAdmin: isAdmin(),
     isLoading: false,
+    oauthStatus: 'idle' as OAuthStatus,
+    oauthMessage: null,
     
     login: async (email: string, password: string) => {
       // Rate limiting: 5 attempts per 15 minutes per email
@@ -98,23 +106,44 @@ export const useAuthStore = create<AuthState>((set) => {
     },
     
     loginWithGoogle: async () => {
+      set({ oauthStatus: 'loading', oauthMessage: 'Signing you in with Google...' });
       try {
-        const authMethods = await pb.collection('users').listAuthMethods();
-        const googleProvider = authMethods.authProviders?.find(
-          (provider) => provider.name === 'google'
-        );
+        // Use PocketBase's built-in OAuth2 method which handles everything automatically
+        // This opens a popup window, handles the OAuth flow, and returns auth data via realtime
+        // Make sure your click handler is NOT async/await if popups are blocked on Safari
+        const authData = await pb.collection('users').authWithOAuth2({
+          provider: 'google',
+        });
         
-        if (!googleProvider) {
-          throw new Error('Google OAuth not configured');
+        if (authData) {
+          set({ oauthStatus: 'success', oauthMessage: 'Successfully signed in with Google!' });
+          checkAuth();
+          // Clear success message after 3 seconds
+          setTimeout(() => {
+            set({ oauthStatus: 'idle', oauthMessage: null });
+          }, 3000);
+        }
+      } catch (error: any) {
+        let errorMessage = 'Failed to sign in with Google. Please try again.';
+        
+        // If popup is blocked or user cancels, handle gracefully
+        if (error?.message?.includes('popup') || error?.message?.includes('blocked')) {
+          errorMessage = 'Popup blocked. Please allow popups for this site and try again.';
+        } else if (error?.message) {
+          errorMessage = error.message;
         }
         
-        // Redirect to OAuth
-        const redirectUrl = `${window.location.origin}/auth/callback`;
-        const url = googleProvider.authUrl + redirectUrl;
-        window.location.href = url;
-      } catch (error) {
+        set({ oauthStatus: 'error', oauthMessage: errorMessage });
         throw error;
       }
+    },
+    
+    clearOAuthStatus: () => {
+      set({ oauthStatus: 'idle', oauthMessage: null });
+    },
+    
+    setOAuthError: (message: string) => {
+      set({ oauthStatus: 'error', oauthMessage: message });
     },
     
     logout: () => {

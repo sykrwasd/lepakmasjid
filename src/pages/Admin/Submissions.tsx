@@ -44,6 +44,9 @@ const Submissions = () => {
     if (!user || !selectedSubmissionId || !rejectReason.trim()) return;
     
     // Sanitize input - limit length and trim
+    // Note: React automatically escapes content in JSX, so if rejection reasons
+    // are ever displayed in the UI, they will be safe from XSS attacks.
+    // However, if displayed via dangerouslySetInnerHTML, additional sanitization is required.
     const sanitizedReason = rejectReason.trim().slice(0, 500);
     
     try {
