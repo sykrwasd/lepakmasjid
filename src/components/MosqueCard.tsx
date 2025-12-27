@@ -2,6 +2,7 @@ import { MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Mosque } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { useLanguageStore } from '@/stores/language';
 import * as LucideIcons from 'lucide-react';
 import { getImageUrl } from '@/lib/pocketbase-images';
@@ -71,6 +72,18 @@ const MosqueCard = ({ mosque, onClick }: MosqueCardProps) => {
     })),
   ];
 
+  // Get activities with language support
+  const activities = mosque.activities || [];
+  const displayActivities = activities.map(activity => ({
+    id: activity.id,
+    title: language === 'bm' && activity.title_bm ? activity.title_bm : activity.title,
+  }));
+  
+  // Show first 3 activities, then "+X more"
+  const MAX_VISIBLE_ACTIVITIES = 3;
+  const visibleActivities = displayActivities.slice(0, MAX_VISIBLE_ACTIVITIES);
+  const remainingCount = displayActivities.length - MAX_VISIBLE_ACTIVITIES;
+
   return (
     <Link to={`/mosque/${mosque.id}`} onClick={onClick}>
       <article
@@ -132,6 +145,34 @@ const MosqueCard = ({ mosque, onClick }: MosqueCardProps) => {
                 );
               })}
             </div>
+          )}
+
+          {/* Activities */}
+          {displayActivities.length > 0 && (
+            <>
+              {allAmenities.length > 0 && (
+                <Separator className="my-3 border-border" />
+              )}
+              <div className="flex flex-wrap gap-2 pt-1">
+                {visibleActivities.map((activity) => (
+                  <Badge
+                    key={activity.id}
+                    variant="secondary"
+                    className="bg-muted text-muted-foreground font-normal px-2.5 py-1"
+                  >
+                    <span className="text-xs">{activity.title}</span>
+                  </Badge>
+                ))}
+                {remainingCount > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-muted text-muted-foreground font-normal px-2.5 py-1"
+                  >
+                    <span className="text-xs">+{remainingCount} more</span>
+                  </Badge>
+                )}
+              </div>
+            </>
           )}
         </div>
       </article>

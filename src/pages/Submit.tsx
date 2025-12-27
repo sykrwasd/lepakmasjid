@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { useCreateSubmission } from '@/hooks/use-submissions';
 import { useMosque } from '@/hooks/use-mosques';
 import { useAmenities } from '@/hooks/use-amenities';
@@ -23,7 +24,8 @@ import { AuthDialog } from '@/components/Auth/AuthDialog';
 import { toast } from 'sonner';
 import { validateImageFile } from '@/lib/pocketbase-images';
 import { X, Plus } from 'lucide-react';
-import type { Amenity, MosqueAmenityDetails } from '@/types';
+import type { Amenity, MosqueAmenityDetails, Activity, ActivitySchedule } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const createMosqueSchema = (t: (key: string) => string) => z.object({
   name: z.string().min(2, t('form.name_required')),
@@ -51,6 +53,18 @@ interface CustomAmenity {
   label_bm: string;
   icon?: string;
   details: MosqueAmenityDetails;
+}
+
+interface ActivityFormData {
+  title: string;
+  title_bm?: string;
+  description?: string;
+  description_bm?: string;
+  type: 'one_off' | 'recurring' | 'fixed';
+  schedule_json: ActivitySchedule;
+  start_date?: string;
+  end_date?: string;
+  status: 'active' | 'cancelled';
 }
 
 const Submit = () => {
@@ -81,6 +95,21 @@ const Submit = () => {
     label_bm: '',
     icon: '',
     details: { notes: '' },
+  });
+
+  // Activities state
+  const [activities, setActivities] = useState<ActivityFormData[]>([]);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [newActivity, setNewActivity] = useState<Partial<ActivityFormData>>({
+    title: '',
+    title_bm: '',
+    description: '',
+    description_bm: '',
+    type: 'one_off',
+    schedule_json: {},
+    start_date: '',
+    end_date: '',
+    status: 'active',
   });
 
   const mosqueSchema = createMosqueSchema(t);
@@ -134,6 +163,19 @@ const Submit = () => {
         details: custom.details,
       }));
 
+      // Prepare activities data
+      const activitiesData = activities.map(activity => ({
+        title: activity.title,
+        title_bm: activity.title_bm || undefined,
+        description: activity.description || undefined,
+        description_bm: activity.description_bm || undefined,
+        type: activity.type,
+        schedule_json: activity.schedule_json,
+        start_date: activity.start_date || undefined,
+        end_date: activity.end_date || undefined,
+        status: activity.status,
+      }));
+
       await createSubmission.mutateAsync({
         type: editId ? 'edit_mosque' : 'new_mosque',
         mosque_id: editId || undefined,
@@ -141,6 +183,7 @@ const Submit = () => {
           ...data,
           amenities: amenitiesData,
           customAmenities: customAmenitiesData,
+          activities: activitiesData,
           // Don't include image in data - it's handled separately via FormData
         },
         status: 'pending',
@@ -204,6 +247,22 @@ const Submit = () => {
         });
       }
       setSelectedAmenities(amenityMap);
+
+      // Load existing activities
+      if (existingMosque.activities && existingMosque.activities.length > 0) {
+        const existingActivities: ActivityFormData[] = existingMosque.activities.map((activity: Activity) => ({
+          title: activity.title,
+          title_bm: activity.title_bm || '',
+          description: activity.description || '',
+          description_bm: activity.description_bm || '',
+          type: activity.type,
+          schedule_json: activity.schedule_json || {},
+          start_date: activity.start_date || '',
+          end_date: activity.end_date || '',
+          status: activity.status,
+        }));
+        setActivities(existingActivities);
+      }
     }
   }, [existingMosque, setValue]);
 
@@ -362,6 +421,64 @@ const Submit = () => {
       details: { ...updated[index].details, notes },
     };
     setCustomAmenities(updated);
+  };
+
+  // Activity handlers
+  const handleAddActivity = () => {
+    if (!newActivity.title || !newActivity.type) {
+      toast.error('Please fill in required fields (Title and Type)');
+      return;
+    }
+
+    // Validate schedule_json based on type
+    if (newActivity.type === 'one_off') {
+      if (!newActivity.schedule_json?.date) {
+        toast.error('Please provide a date for one-time events');
+        return;
+      }
+    } else if (newActivity.type === 'recurring') {
+      if (!newActivity.schedule_json?.recurrence) {
+        toast.error('Please select a recurrence pattern');
+        return;
+      }
+    }
+
+    setActivities([...activities, newActivity as ActivityFormData]);
+
+    // Reset form
+    setNewActivity({
+      title: '',
+      title_bm: '',
+      description: '',
+      description_bm: '',
+      type: 'one_off',
+      schedule_json: {},
+      start_date: '',
+      end_date: '',
+      status: 'active',
+    });
+    setShowActivityForm(false);
+  };
+
+  const handleRemoveActivity = (index: number) => {
+    setActivities(activities.filter((_, i) => i !== index));
+  };
+
+  const handleActivityFieldChange = (field: keyof ActivityFormData, value: any) => {
+    setNewActivity(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleScheduleJsonChange = (field: string, value: any) => {
+    setNewActivity(prev => ({
+      ...prev,
+      schedule_json: {
+        ...prev.schedule_json,
+        [field]: value,
+      },
+    }));
   };
 
   const onSubmit = async (data: MosqueFormData) => {
@@ -636,6 +753,254 @@ const Submit = () => {
                         className="w-full"
                       >
                         {t('common.add') || 'Add'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Activities Section */}
+              <div className="space-y-4">
+                <div>
+                  <Label>{t('submit.activities')}</Label>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {t('submit.activities_hint')}
+                  </p>
+                  
+                  {activities.length > 0 && (
+                    <div className="space-y-3 mb-4">
+                      {activities.map((activity, index) => {
+                        const title = language === 'bm' && activity.title_bm 
+                          ? activity.title_bm 
+                          : activity.title;
+                        return (
+                          <div key={index} className="border rounded-lg p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="font-medium">{title}</div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveActivity(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              <Badge variant="secondary">{activity.type}</Badge>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {!showActivityForm ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowActivityForm(true)}
+                      className="w-full"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t('submit.add_activity')}
+                    </Button>
+                  ) : (
+                    <div className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="font-medium">{t('submit.add_activity')}</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setShowActivityForm(false);
+                            setNewActivity({
+                              title: '',
+                              title_bm: '',
+                              description: '',
+                              description_bm: '',
+                              type: 'one_off',
+                              schedule_json: {},
+                              start_date: '',
+                              end_date: '',
+                              status: 'active',
+                            });
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="activity-title">{t('submit.activity_title')}</Label>
+                        <Input
+                          id="activity-title"
+                          value={newActivity.title || ''}
+                          onChange={(e) => handleActivityFieldChange('title', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="activity-title-bm">{t('submit.activity_title_bm')}</Label>
+                        <Input
+                          id="activity-title-bm"
+                          value={newActivity.title_bm || ''}
+                          onChange={(e) => handleActivityFieldChange('title_bm', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="activity-description">{t('submit.activity_description')}</Label>
+                          <Textarea
+                            id="activity-description"
+                            value={newActivity.description || ''}
+                            onChange={(e) => handleActivityFieldChange('description', e.target.value)}
+                            rows={3}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="activity-description-bm">{t('submit.activity_description_bm')}</Label>
+                          <Textarea
+                            id="activity-description-bm"
+                            value={newActivity.description_bm || ''}
+                            onChange={(e) => handleActivityFieldChange('description_bm', e.target.value)}
+                            rows={3}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="activity-type">{t('submit.activity_type')}</Label>
+                        <Select
+                          value={newActivity.type || 'one_off'}
+                          onValueChange={(value: 'one_off' | 'recurring' | 'fixed') => 
+                            handleActivityFieldChange('type', value)
+                          }
+                        >
+                          <SelectTrigger id="activity-type">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="one_off">{t('submit.activity_type_one_off')}</SelectItem>
+                            <SelectItem value="recurring">{t('submit.activity_type_recurring')}</SelectItem>
+                            <SelectItem value="fixed">{t('submit.activity_type_fixed')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Schedule fields based on type */}
+                      {newActivity.type === 'one_off' && (
+                        <div className="grid md:grid-cols-2 gap-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="activity-date">{t('submit.activity_date')}</Label>
+                            <Input
+                              id="activity-date"
+                              type="date"
+                              value={newActivity.schedule_json?.date || ''}
+                              onChange={(e) => handleScheduleJsonChange('date', e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="activity-time">{t('submit.activity_time')}</Label>
+                            <Input
+                              id="activity-time"
+                              type="time"
+                              value={newActivity.schedule_json?.time || ''}
+                              onChange={(e) => handleScheduleJsonChange('time', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {newActivity.type === 'recurring' && (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="activity-recurrence">{t('submit.activity_recurrence')}</Label>
+                            <Select
+                              value={newActivity.schedule_json?.recurrence || ''}
+                              onValueChange={(value: 'daily' | 'weekly' | 'monthly') => 
+                                handleScheduleJsonChange('recurrence', value)
+                              }
+                            >
+                              <SelectTrigger id="activity-recurrence">
+                                <SelectValue placeholder="Select recurrence" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="daily">{t('submit.activity_recurrence_daily')}</SelectItem>
+                                <SelectItem value="weekly">{t('submit.activity_recurrence_weekly')}</SelectItem>
+                                <SelectItem value="monthly">{t('submit.activity_recurrence_monthly')}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid md:grid-cols-2 gap-2">
+                            <div className="space-y-2">
+                              <Label htmlFor="activity-start-date">{t('submit.activity_start_date')}</Label>
+                              <Input
+                                id="activity-start-date"
+                                type="date"
+                                value={newActivity.schedule_json?.start_date || ''}
+                                onChange={(e) => handleScheduleJsonChange('start_date', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="activity-end-date">{t('submit.activity_end_date')}</Label>
+                              <Input
+                                id="activity-end-date"
+                                type="date"
+                                value={newActivity.schedule_json?.end_date || ''}
+                                onChange={(e) => handleScheduleJsonChange('end_date', e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          {newActivity.schedule_json?.recurrence === 'weekly' && (
+                            <div className="space-y-2">
+                              <Label>{t('submit.activity_days_of_week')}</Label>
+                              <div className="flex flex-wrap gap-2">
+                                {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
+                                  <div key={day} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`day-${index}`}
+                                      checked={newActivity.schedule_json?.days_of_week?.includes(index) || false}
+                                      onCheckedChange={(checked) => {
+                                        const currentDays = newActivity.schedule_json?.days_of_week || [];
+                                        const newDays = checked
+                                          ? [...currentDays, index]
+                                          : currentDays.filter(d => d !== index);
+                                        handleScheduleJsonChange('days_of_week', newDays.sort());
+                                      }}
+                                    />
+                                    <Label htmlFor={`day-${index}`} className="text-sm font-normal cursor-pointer">
+                                      {day}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {newActivity.type === 'fixed' && (
+                        <div className="space-y-2">
+                          <Label htmlFor="activity-time">{t('submit.activity_time')}</Label>
+                          <Input
+                            id="activity-time"
+                            type="time"
+                            value={newActivity.schedule_json?.time || ''}
+                            onChange={(e) => handleScheduleJsonChange('time', e.target.value)}
+                          />
+                        </div>
+                      )}
+
+                      <Button
+                        type="button"
+                        onClick={handleAddActivity}
+                        className="w-full"
+                      >
+                        {t('common.add')}
                       </Button>
                     </div>
                   )}

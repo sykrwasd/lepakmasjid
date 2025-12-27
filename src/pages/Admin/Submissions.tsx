@@ -4,6 +4,7 @@ import { AuthGuard } from '@/components/Auth/AuthGuard';
 import { useSubmissions, useApproveSubmission, useRejectSubmission } from '@/hooks/use-submissions';
 import { useMosque } from '@/hooks/use-mosques';
 import { useAmenities } from '@/hooks/use-amenities';
+import { useActivities } from '@/hooks/use-activities';
 import { useAuthStore } from '@/stores/auth';
 import { useTranslation } from '@/hooks/use-translation';
 import { useLanguageStore } from '@/stores/language';
@@ -18,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { getImageUrl } from '@/lib/pocketbase-images';
 import { mosqueAmenitiesApi } from '@/lib/api';
-import type { Submission, Amenity } from '@/types';
+import type { Submission, Amenity, Activity } from '@/types';
 
 const Submissions = () => {
   const { t } = useTranslation();
@@ -178,6 +179,7 @@ const NewMosqueView = ({ submission }: { submission: Submission }) => {
   const submissionRecord = submission as any;
   const submittedAmenities = submissionData.amenities || [];
   const submittedCustomAmenities = submissionData.customAmenities || [];
+  const submittedActivities = submissionData.activities || [];
 
   // Create a map of amenity IDs to amenity objects
   const amenityMap = new Map<string, Amenity>();
@@ -253,6 +255,39 @@ const NewMosqueView = ({ submission }: { submission: Submission }) => {
           />
         </div>
       )}
+
+      {/* Activities Section */}
+      {submittedActivities.length > 0 && (
+        <div className="space-y-2 pt-4 border-t">
+          <p><strong>{t('mosque.activities')}:</strong></p>
+          <div className="space-y-2">
+            {submittedActivities.map((activity: any, index: number) => {
+              const title = language === 'bm' && activity.title_bm 
+                ? activity.title_bm 
+                : activity.title;
+              const description = language === 'bm' && activity.description_bm
+                ? activity.description_bm
+                : activity.description;
+              return (
+                <div key={index} className="text-sm bg-muted/50 p-2 rounded">
+                  <p className="font-medium">{title}</p>
+                  {description && (
+                    <p className="text-muted-foreground text-xs mt-1">{description}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary">{activity.type}</Badge>
+                    {activity.status && (
+                      <Badge variant={activity.status === 'active' ? 'default' : 'destructive'}>
+                        {activity.status}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -263,11 +298,13 @@ const EditComparison = ({ submission }: { submission: Submission }) => {
   const { language } = useLanguageStore();
   const { data: currentMosque, isLoading } = useMosque(submission.mosque_id || null);
   const { data: amenities = [] } = useAmenities();
+  const { data: currentActivities = [] } = useActivities(submission.mosque_id || null);
   const [currentAmenities, setCurrentAmenities] = useState<any[]>([]);
   const proposedData = submission.data as any;
   const submissionRecord = submission as any;
   const proposedAmenities = proposedData.amenities || [];
   const proposedCustomAmenities = proposedData.customAmenities || [];
+  const proposedActivities = proposedData.activities || [];
 
   // Load current amenities
   useEffect(() => {
@@ -384,6 +421,33 @@ const EditComparison = ({ submission }: { submission: Submission }) => {
                     />
                   )}
                 </div>
+
+                {/* Current Activities */}
+                <div className="pt-4 border-t">
+                  <p className="text-sm font-medium mb-2">{t('mosque.activities')}:</p>
+                  {currentActivities.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No activities</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {currentActivities.map((activity: Activity) => {
+                        const title = language === 'bm' && activity.title_bm 
+                          ? activity.title_bm 
+                          : activity.title;
+                        return (
+                          <div key={activity.id} className="text-sm bg-muted/50 p-2 rounded">
+                            <p className="font-medium">{title}</p>
+                            {activity.description && (
+                              <p className="text-muted-foreground text-xs mt-1">{activity.description}</p>
+                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="secondary">{activity.type}</Badge>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -456,6 +520,42 @@ const EditComparison = ({ submission }: { submission: Submission }) => {
                     </div>
                   )}
                 </div>
+
+                {/* Proposed Activities */}
+                <div className="pt-4 border-t">
+                  <p className="text-sm font-medium mb-2">{t('mosque.activities')}:</p>
+                  {proposedActivities.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No activities</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {proposedActivities.map((activity: any, index: number) => {
+                        const title = language === 'bm' && activity.title_bm 
+                          ? activity.title_bm 
+                          : activity.title;
+                        const description = language === 'bm' && activity.description_bm
+                          ? activity.description_bm
+                          : activity.description;
+                        const isNew = !currentActivities.some(ca => ca.title === activity.title);
+                        return (
+                          <div key={index} className={`text-sm p-2 rounded ${isNew ? 'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800' : 'bg-muted/50'}`}>
+                            <p className="font-medium">{title} {isNew && <span className="text-xs text-green-600 dark:text-green-400">(New)</span>}</p>
+                            {description && (
+                              <p className="text-muted-foreground text-xs mt-1">{description}</p>
+                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="secondary">{activity.type}</Badge>
+                              {activity.status && (
+                                <Badge variant={activity.status === 'active' ? 'default' : 'destructive'}>
+                                  {activity.status}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -505,6 +605,31 @@ const EditComparison = ({ submission }: { submission: Submission }) => {
                   allAmenities={amenities}
                   language={language}
                 />
+              )}
+            </div>
+            <div className="pt-4 border-t">
+              <p><strong>{t('mosque.activities')}:</strong></p>
+              {currentActivities.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No activities</p>
+              ) : (
+                <div className="space-y-2">
+                  {currentActivities.map((activity: Activity) => {
+                    const title = language === 'bm' && activity.title_bm 
+                      ? activity.title_bm 
+                      : activity.title;
+                    return (
+                      <div key={activity.id} className="text-sm bg-muted/50 p-2 rounded">
+                        <p className="font-medium">{title}</p>
+                        {activity.description && (
+                          <p className="text-muted-foreground text-xs mt-1">{activity.description}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary">{activity.type}</Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </div>
@@ -571,6 +696,39 @@ const EditComparison = ({ submission }: { submission: Submission }) => {
                         {custom.details?.notes && (
                           <p className="text-muted-foreground text-xs mt-1">{custom.details.notes}</p>
                         )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div className="pt-4 border-t">
+              <p><strong>{t('mosque.activities')}:</strong></p>
+              {proposedActivities.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No activities</p>
+              ) : (
+                <div className="space-y-2">
+                  {proposedActivities.map((activity: any, index: number) => {
+                    const title = language === 'bm' && activity.title_bm 
+                      ? activity.title_bm 
+                      : activity.title;
+                    const description = language === 'bm' && activity.description_bm
+                      ? activity.description_bm
+                      : activity.description;
+                    return (
+                      <div key={index} className="text-sm bg-muted/50 p-2 rounded">
+                        <p className="font-medium">{title}</p>
+                        {description && (
+                          <p className="text-muted-foreground text-xs mt-1">{description}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary">{activity.type}</Badge>
+                          {activity.status && (
+                            <Badge variant={activity.status === 'active' ? 'default' : 'destructive'}>
+                              {activity.status}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

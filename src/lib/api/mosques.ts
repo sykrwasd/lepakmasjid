@@ -5,6 +5,69 @@ import { createFormDataWithImage, validateImageFile } from '../pocketbase-images
 import { validateState, sanitizeSearchTerm } from '../validation';
 import { sanitizeError } from '../error-handler';
 
+// Helper function to fetch and attach activities to mosques
+async function attachActivitiesToMosques(mosques: Mosque[]): Promise<Mosque[]> {
+  if (mosques.length === 0) {
+    return mosques;
+  }
+
+  try {
+    const mosqueIds = new Set(mosques.map(m => m.id));
+    
+    // Fetch all activities and filter client-side
+    // This is more reliable than building complex filters that may fail
+    let activitiesResult;
+    try {
+      // Try with sort first
+      activitiesResult = await pb.collection('activities').getList(1, 500, {
+        sort: '-created',
+      });
+    } catch (fetchError: any) {
+      // If sort fails, try without sort
+      try {
+        activitiesResult = await pb.collection('activities').getList(1, 500);
+      } catch (noSortError: any) {
+        // If that also fails, just log and continue without activities
+        console.warn('Failed to fetch activities:', noSortError);
+        return mosques;
+      }
+    }
+    
+    // Filter activities client-side:
+    // 1. Only include activities for mosques we're displaying
+    // 2. Only include active activities (if status field exists)
+    const activitiesByMosque: Record<string, Activity[]> = {};
+    
+    activitiesResult.items.forEach((item: any) => {
+      const mosqueId = item.mosque_id;
+      const status = item.status;
+      
+      // Only include activities for mosques we're displaying
+      // and only active activities (if status field exists and is not 'active', skip it)
+      if (mosqueId && mosqueIds.has(mosqueId)) {
+        // If status field exists, only include active activities
+        // If status field doesn't exist or is undefined, include all
+        if (!status || status === 'active') {
+          if (!activitiesByMosque[mosqueId]) {
+            activitiesByMosque[mosqueId] = [];
+          }
+          activitiesByMosque[mosqueId].push(item as Activity);
+        }
+      }
+    });
+    
+    // Attach activities to mosques
+    return mosques.map(mosque => ({
+      ...mosque,
+      activities: activitiesByMosque[mosque.id] || [],
+    })) as Mosque[];
+  } catch (activitiesError: any) {
+    // If activities fetch fails, return mosques without activities
+    console.warn('Failed to fetch activities:', activitiesError);
+    return mosques;
+  }
+}
+
 // Helper function to fetch and attach amenities to mosques
 async function attachAmenitiesToMosques(mosques: Mosque[]): Promise<Mosque[]> {
   if (mosques.length === 0) {
@@ -160,8 +223,9 @@ export const mosquesApi = {
         });
       }
       
-      // Fetch and attach amenities to mosques
-      return await attachAmenitiesToMosques(filtered);
+      // Fetch and attach amenities and activities to mosques
+      const mosquesWithAmenities = await attachAmenitiesToMosques(filtered);
+      return await attachActivitiesToMosques(mosquesWithAmenities);
     } catch (error: any) {
       // Log the error for debugging
       console.error('Failed to fetch mosques:', {

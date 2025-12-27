@@ -5,6 +5,7 @@ import { sanitizeError } from '../error-handler';
 import { validateImageFile, createFormDataWithImage, getImageFileFromRecord } from '../pocketbase-images';
 import { mosquesApi } from './mosques';
 import { amenitiesApi, mosqueAmenitiesApi } from './amenities';
+import { activitiesApi } from './activities';
 
 export const submissionsApi = {
   // List submissions (admin only)
@@ -268,6 +269,52 @@ export const submissionsApi = {
         } catch (err) {
           console.warn('Failed to update mosque amenities:', err);
           // Don't fail the submission approval if amenities fail
+        }
+      }
+
+      // Handle activities from submission
+      const activities = submissionData.activities || [];
+      if (activities.length > 0) {
+        try {
+          // Delete existing activities for this mosque (for edit submissions)
+          if (submission.type === 'edit_mosque') {
+            try {
+              const existingActivities = await pb.collection('activities').getList(1, 100, {
+                filter: `mosque_id = "${createdMosqueId}"`,
+              });
+              for (const activity of existingActivities.items) {
+                await pb.collection('activities').delete(activity.id);
+              }
+            } catch (deleteErr) {
+              console.warn('Failed to delete existing activities:', deleteErr);
+              // Continue with creating new activities
+            }
+          }
+
+          // Create new activities
+          for (const activityData of activities) {
+            try {
+              await activitiesApi.create({
+                mosque_id: createdMosqueId,
+                title: activityData.title,
+                title_bm: activityData.title_bm || undefined,
+                description: activityData.description || undefined,
+                description_bm: activityData.description_bm || undefined,
+                type: activityData.type,
+                schedule_json: activityData.schedule_json || {},
+                start_date: activityData.start_date || undefined,
+                end_date: activityData.end_date || undefined,
+                status: activityData.status || 'active',
+                created_by: submission.submitted_by,
+              });
+            } catch (activityErr) {
+              console.warn('Failed to create activity:', activityErr);
+              // Continue with other activities
+            }
+          }
+        } catch (activitiesErr) {
+          console.warn('Failed to process activities:', activitiesErr);
+          // Don't fail the submission approval if activities fail
         }
       }
     }
