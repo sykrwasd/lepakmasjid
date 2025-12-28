@@ -170,7 +170,8 @@ export const mosquesApi = {
       }
       
       // Add sort if specified, otherwise skip sort to avoid potential issues
-      if (filters?.sortBy) {
+      // Skip server-side sort for most_amenities since we sort client-side after attaching amenities
+      if (filters?.sortBy && filters.sortBy !== 'most_amenities') {
         const sortString = this.getSortString(filters.sortBy);
         if (sortString) {
           queryOptions.sort = sortString;
@@ -199,15 +200,26 @@ export const mosquesApi = {
         }
       }
       
+      // For most_amenities sort, we need to attach amenities first before sorting
+      // For other sorts, we can sort before attaching amenities
+      const needsAmenitiesForSort = filters?.sortBy === 'most_amenities';
+      
+      let mosquesToSort = filtered;
+      
+      // If we need amenities for sorting, attach them to all filtered items first
+      if (needsAmenitiesForSort) {
+        mosquesToSort = await attachAmenitiesToMosques(filtered);
+      }
+      
       // Sort client-side if needed (for cases where server-side sort might fail)
       if (filters?.sortBy) {
         switch (filters.sortBy) {
           case 'alphabetical':
-            filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            mosquesToSort.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             break;
           case 'most_amenities':
             // Sort by number of amenities (descending)
-            filtered.sort((a, b) => {
+            mosquesToSort.sort((a, b) => {
               const aCount = (a.amenities?.length || 0) + (a.customAmenities?.length || 0);
               const bCount = (b.amenities?.length || 0) + (b.customAmenities?.length || 0);
               return bCount - aCount;
@@ -215,7 +227,7 @@ export const mosquesApi = {
             break;
           default:
             // Default: sort by created date (newest first)
-            filtered.sort((a, b) => {
+            mosquesToSort.sort((a, b) => {
               const aDate = new Date(a.created || 0).getTime();
               const bDate = new Date(b.created || 0).getTime();
               return bDate - aDate;
@@ -223,7 +235,7 @@ export const mosquesApi = {
         }
       } else {
         // Default sort by created date (newest first)
-        filtered.sort((a, b) => {
+        mosquesToSort.sort((a, b) => {
           const aDate = new Date(a.created || 0).getTime();
           const bDate = new Date(b.created || 0).getTime();
           return bDate - aDate;
@@ -233,16 +245,19 @@ export const mosquesApi = {
       // Apply pagination after filtering and sorting
       const startIndex = (page - 1) * perPage;
       const endIndex = startIndex + perPage;
-      const paginatedItems = filtered.slice(startIndex, endIndex);
+      const paginatedItems = mosquesToSort.slice(startIndex, endIndex);
       
       // Calculate total pages based on filtered results
       // Note: This is an approximation since we don't know the total filtered count
       // For accurate pagination, we'd need to fetch all items or use server-side filtering
-      const totalItems = filtered.length;
+      const totalItems = mosquesToSort.length;
       const totalPages = Math.ceil(totalItems / perPage);
       
-      // Fetch and attach amenities and activities to mosques
-      const mosquesWithAmenities = await attachAmenitiesToMosques(paginatedItems);
+      // Fetch and attach amenities and activities to mosques (if not already attached)
+      let mosquesWithAmenities = paginatedItems;
+      if (!needsAmenitiesForSort) {
+        mosquesWithAmenities = await attachAmenitiesToMosques(paginatedItems);
+      }
       const mosquesWithDetails = await attachActivitiesToMosques(mosquesWithAmenities);
       
       return {
@@ -298,7 +313,8 @@ export const mosquesApi = {
       }
       
       // Add sort if specified
-      if (filters?.sortBy) {
+      // Skip server-side sort for most_amenities since we sort client-side after attaching amenities
+      if (filters?.sortBy && filters.sortBy !== 'most_amenities') {
         const sortString = this.getSortString(filters.sortBy);
         if (sortString) {
           queryOptions.sort = sortString;
