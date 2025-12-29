@@ -182,6 +182,16 @@ const Footer = () => {
                   pasarmalam.app
                 </a>
               </li>
+              <li>
+                <a
+                  href="https://kalori-api.my/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  kalori-api.my
+                </a>
+              </li>
             </ul>
           </div>
         </div>
