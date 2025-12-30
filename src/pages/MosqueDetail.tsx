@@ -14,6 +14,8 @@ import { useLanguageStore } from "@/stores/language";
 import { SkipLink } from "@/components/SkipLink";
 import { format } from "date-fns";
 import { getImageUrl } from "@/lib/pocketbase-images";
+import SedekahQR from "@/components/SedekahQR";
+import OpenMapsButton from "../components/OpenMapsButton";
 
 const MosqueDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -64,6 +66,8 @@ const MosqueDetail = () => {
       ? mosque.description_bm
       : mosque.description;
 
+  const name_bm = mosque.name_bm
+  const name = mosque.name
   // Get image URL for the mosque
   const imageUrl = getImageUrl(mosque, mosque.image);
 
@@ -149,6 +153,12 @@ const MosqueDetail = () => {
               />
             </div>
 
+            <OpenMapsButton
+              lat={mosque?.lat}
+              lng={mosque?.lng}
+              className="mb-8 w-full"
+            />
+
             {/* Amenities */}
             {mosque.amenities && mosque.amenities.length > 0 && (
               <div className="mb-8">
@@ -231,9 +241,11 @@ const MosqueDetail = () => {
                 </div>
               </div>
             )}
+            <SedekahQR masjidName_BM={name_bm} masjidName_Eng={name}></SedekahQR>
           </div>
         </main>
 
+        {/* Sedekah je */}  
         <Footer />
       </div>
     </>
