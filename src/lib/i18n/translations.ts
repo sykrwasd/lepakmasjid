@@ -226,6 +226,7 @@ export const translations = {
     "footer.privacy_policy": "Privacy Policy",
     "footer.terms_of_use": "Terms of Use",
     "footer.content_policy": "Content Policy",
+    "footer.cool_projects": "Cool Projects",
     "footer.copyright": "Open source under AGPL license.",
     "footer.made_with": "Made with ❤️ by the Malaysian Muslim community",
 
@@ -356,7 +357,7 @@ export const translations = {
     "privacy.title": "Privacy Policy",
     "privacy.meta_description":
       "Privacy Policy for LepakMasjid - Learn how we protect your personal information.",
-    "privacy.last_updated": "Last updated: January 2024",
+    "privacy.last_updated": "Last updated: December 2025",
     "privacy.introduction_title": "Introduction",
     "privacy.introduction_content":
       "At LepakMasjid, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information when you use our service.",
@@ -399,7 +400,7 @@ export const translations = {
     "terms.title": "Terms of Use",
     "terms.meta_description":
       "Terms of Use for LepakMasjid - Read our terms and conditions.",
-    "terms.last_updated": "Last updated: January 2024",
+    "terms.last_updated": "Last updated: December 2025",
     "terms.acceptance_title": "Acceptance of Terms",
     "terms.acceptance_content":
       "By accessing and using LepakMasjid, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these terms, please do not use our service.",
@@ -449,7 +450,7 @@ export const translations = {
     "content_policy.title": "Content Policy",
     "content_policy.meta_description":
       "Content Policy for LepakMasjid - Guidelines for submitting and sharing content.",
-    "content_policy.last_updated": "Last updated: January 2024",
+    "content_policy.last_updated": "Last updated: December 2025",
     "content_policy.introduction_title": "Introduction",
     "content_policy.introduction_content":
       "This Content Policy outlines the guidelines for submitting and sharing content on LepakMasjid. By using our service, you agree to follow these guidelines.",
@@ -709,6 +710,7 @@ export const translations = {
     "footer.privacy_policy": "Dasar Privasi",
     "footer.terms_of_use": "Terma Penggunaan",
     "footer.content_policy": "Dasar Kandungan",
+    "footer.cool_projects": "Projek Menarik",
     "footer.copyright": "Sumber terbuka di bawah lesen AGPL.",
     "footer.made_with": "Dibuat dengan ❤️ oleh komuniti Muslim Malaysia",
 
@@ -861,7 +863,7 @@ export const translations = {
     "privacy.title": "Dasar Privasi",
     "privacy.meta_description":
       "Dasar Privasi untuk LepakMasjid - Ketahui bagaimana kami melindungi maklumat peribadi anda.",
-    "privacy.last_updated": "Kemaskini terakhir: Januari 2024",
+    "privacy.last_updated": "Kemaskini terakhir: Disember 2025",
     "privacy.introduction_title": "Pengenalan",
     "privacy.introduction_content":
       "Di LepakMasjid, kami komited untuk melindungi privasi anda. Dasar Privasi ini menerangkan bagaimana kami mengumpul, menggunakan, dan melindungi maklumat peribadi anda apabila anda menggunakan perkhidmatan kami.",
@@ -904,7 +906,7 @@ export const translations = {
     "terms.title": "Terma Penggunaan",
     "terms.meta_description":
       "Terma Penggunaan untuk LepakMasjid - Baca terma dan syarat kami.",
-    "terms.last_updated": "Kemaskini terakhir: Januari 2024",
+    "terms.last_updated": "Kemaskini terakhir: Disember 2025",
     "terms.acceptance_title": "Penerimaan Terma",
     "terms.acceptance_content":
       "Dengan mengakses dan menggunakan LepakMasjid, anda menerima dan bersetuju untuk terikat dengan terma dan peruntukan perjanjian ini. Jika anda tidak bersetuju dengan terma ini, sila jangan gunakan perkhidmatan kami.",
@@ -955,7 +957,7 @@ export const translations = {
     "content_policy.title": "Dasar Kandungan",
     "content_policy.meta_description":
       "Dasar Kandungan untuk LepakMasjid - Garis panduan untuk menghantar dan berkongsi kandungan.",
-    "content_policy.last_updated": "Kemaskini terakhir: Januari 2024",
+    "content_policy.last_updated": "Kemaskini terakhir: Disember 2025",
     "content_policy.introduction_title": "Pengenalan",
     "content_policy.introduction_content":
       "Dasar Kandungan ini menggariskan garis panduan untuk menghantar dan berkongsi kandungan di LepakMasjid. Dengan menggunakan perkhidmatan kami, anda bersetuju untuk mengikuti garis panduan ini.",

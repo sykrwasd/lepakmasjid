@@ -22,6 +22,7 @@ A community-maintained, searchable directory of mosques in Malaysia focused on f
 ## Tech Stack
 
 ### Frontend
+
 - **Framework**: React 18.3+ with TypeScript
 - **Build Tool**: Vite 7.3+
 - **Routing**: React Router DOM 6.30+
@@ -37,11 +38,13 @@ A community-maintained, searchable directory of mosques in Malaysia focused on f
 - **SEO**: React Helmet Async
 
 ### Backend
+
 - **Backend**: PocketBase 0.21+
 - **Authentication**: PocketBase Auth with Google OAuth2 support
 - **Database**: SQLite (via PocketBase)
 
 ### Development Tools
+
 - **Package Manager**: pnpm 8+
 - **Linting**: ESLint 9.32+ with TypeScript ESLint
 - **Formatting**: Prettier 3.7+ (integrated with ESLint)
@@ -60,7 +63,7 @@ A community-maintained, searchable directory of mosques in Malaysia focused on f
 
 ```powershell
 git clone <YOUR_GIT_URL>
-cd lepakmasjid_v2
+cd lepakmasjid
 ```
 
 ### 2. Install dependencies
@@ -107,7 +110,7 @@ This serves the production build locally for testing.
 ## Project Structure
 
 ```
-lepakmasjid_v2/
+lepakmasjid/
 ├── public/                 # Static assets
 │   ├── _headers           # Cloudflare Pages headers
 │   ├── _redirects         # Client-side routing redirects
@@ -206,29 +209,35 @@ lepakmasjid_v2/
 The application uses PocketBase as the backend with the following collection structure:
 
 ### 1. Users (`users`)
+
 **Type**: Auth (built-in authentication collection)  
 **Purpose**: Stores authenticated users with optional roles (user or admin).
 
 **Key Fields**:
+
 - `id` (15-char auto-generated text, primary key)
 - `email`, `password`, `verified`, `name`, `avatar`
 - `role` (optional: `user` or `admin`)
 - `tokenKey` for session/auth management
 
 **Rules**:
+
 - Users can only view/edit/delete their own records unless they are admins
 
 **Auth Features**:
+
 - Email/password login enabled
 - OAuth2 mapping for name and avatar
 - Email verification, password reset, and email change workflows configured
 - Login alerts for new locations
 
 ### 2. Mosques (`mosques`)
+
 **Type**: Base  
 **Purpose**: Stores information about mosques.
 
 **Key Fields**:
+
 - `name`, `name_bm` (Malay), `address`, `state`
 - `lat`, `lng` (geolocation)
 - `description` (English & Malay)
@@ -237,31 +246,37 @@ The application uses PocketBase as the backend with the following collection str
 - `image` (file upload)
 
 **Rules**:
+
 - Publicly visible only if `status = "approved"`
 - Authenticated users can create/update/delete (including unapproved entries)
 
 **Indexes**: Optimized for state, status, and geolocation queries
 
 ### 3. Amenities (`amenities`)
+
 **Type**: Base  
 **Purpose**: Catalog of standardized amenities (e.g., wheelchair access, parking).
 
 **Key Fields**:
+
 - `key` (unique string identifier, e.g., `wheelchair`)
 - `label_en`, `label_bm` (display names)
 - `icon` (optional icon name or URL)
 - `order` (for UI sorting)
 
 **Constraints**:
+
 - `key` must be unique
 
 **Usage**: Referenced by `mosque_amenities` to associate amenities with mosques
 
 ### 4. Mosque Amenities (`mosque_amenities`)
+
 **Type**: Base (join table)  
 **Purpose**: Links mosques to amenities with optional verification and details.
 
 **Key Fields**:
+
 - `mosque_id` → `mosques`
 - `amenity_id` → `amenities`
 - `details` (JSON for extra info, e.g., capacity, notes)
@@ -270,10 +285,12 @@ The application uses PocketBase as the backend with the following collection str
 **Indexes**: Optimized for lookups by mosque or amenity
 
 ### 5. Activities (`activities`)
+
 **Type**: Base  
 **Purpose**: Represents scheduled events or programs at mosques.
 
 **Key Fields**:
+
 - `title` / `title_bm`, `description` / `description_bm`
 - `type`: `one_off` | `recurring` | `fixed`
 - `schedule_json` (structured JSON for timing rules)
@@ -283,16 +300,19 @@ The application uses PocketBase as the backend with the following collection str
 - `created_by` → `users`
 
 **Rules**:
+
 - Authenticated users can create
 - Only the creator can update/delete
 
 **Indexes**: By mosque and status
 
 ### 6. Submissions (`submissions`)
+
 **Type**: Base  
 **Purpose**: Tracks user-submitted changes (e.g., new mosque or edits).
 
 **Key Fields**:
+
 - `type`: `new_mosque` | `edit_mosque`
 - `mosque_id` (only set for edits)
 - `data` (JSON payload of proposed changes)
@@ -302,17 +322,20 @@ The application uses PocketBase as the backend with the following collection str
 - `rejection_reason`, `image` (supporting media)
 
 **Workflow**:
+
 - Users submit → admins review → approve/reject
 
 **Indexes**: For status, submitter, and timestamp
 
 ### 7. Audit Logs (`audit_logs`)
+
 **Type**: Base  
 **Purpose**: Immutable log of administrative or sensitive actions.
 
 **Access**: Only visible to admins
 
 **Key Fields**:
+
 - `actor_id` → user who performed action
 - `action` (e.g., `"mosque.updated"`)
 - `entity_type`, `entity_id` (what was changed)
@@ -330,14 +353,15 @@ The application uses PocketBase as the backend with the following collection str
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_POCKETBASE_URL` | PocketBase instance URL | `https://pb.muazhazali.me` |
-| `VITE_APP_URL` | Application URL (for OAuth redirects) | `http://localhost:8080` |
+| Variable              | Description                           | Default                    |
+| --------------------- | ------------------------------------- | -------------------------- |
+| `VITE_POCKETBASE_URL` | PocketBase instance URL               | `https://pb.muazhazali.me` |
+| `VITE_APP_URL`        | Application URL (for OAuth redirects) | `http://localhost:8080`    |
 
 ## Available Scripts
 
 ### Development
+
 - `pnpm dev` - Start development server
 - `pnpm build` - Build for production
 - `pnpm preview` - Preview production build
@@ -347,6 +371,7 @@ The application uses PocketBase as the backend with the following collection str
 - `pnpm format:check` - Check if code files are formatted (useful for CI)
 
 ### PocketBase Setup
+
 - `pnpm test:connection` - Test connection to PocketBase
 - `pnpm setup:collections` - Create all required PocketBase collections
 - `pnpm test:schema` - Verify PocketBase collections match PRD schema
@@ -354,6 +379,7 @@ The application uses PocketBase as the backend with the following collection str
 - `pnpm seed:data` - Seed database with sample mosque data (10 mosques)
 
 ### Maintenance
+
 - `pnpm setup:role-field` - Add role field to users collection
 - `pnpm setup:admin` - Set admin role for a user
 - `pnpm fix:permissions` - Fix collection permissions
@@ -367,17 +393,21 @@ The application connects to a deployed PocketBase instance at `pb.muazhazali.me`
 ### Quick Setup
 
 1. **Test Connection**: Verify you can connect to PocketBase
+
    ```powershell
    pnpm run test:connection
    ```
 
 2. **Create Collections**: Set up all required collections in PocketBase
+
    ```powershell
    pnpm run setup:collections
    ```
+
    This will prompt for your PocketBase admin credentials and create all collections automatically.
 
 3. **Verify Schema**: Check that collections match the PRD schema
+
    ```powershell
    pnpm run test:schema
    ```
@@ -385,6 +415,7 @@ The application connects to a deployed PocketBase instance at `pb.muazhazali.me`
 4. **Configure Google OAuth**: Follow the guide in `.docs/GOOGLE_OAUTH_SETUP.md`
 
 5. **Test Submission Workflow**: Test the end-to-end submission process
+
    ```powershell
    pnpm run test:submission
    ```
@@ -396,6 +427,7 @@ The application connects to a deployed PocketBase instance at `pb.muazhazali.me`
    This will create 10 sample mosques from different Malaysian states with amenities and descriptions.
 
 For detailed setup instructions, see:
+
 - [PocketBase Setup Guide](./.docs/POCKETBASE_SETUP.md) - Detailed PocketBase configuration
 - [Cloudflare Deployment Guide](./.docs/CLOUDFLARE_DEPLOYMENT.md) - Step-by-step guide to deploy to Cloudflare Pages
 
@@ -443,6 +475,7 @@ This application is designed to be deployed on Cloudflare Pages, a JAMstack plat
 4. **Update Environment Variables**: After setting up custom domain, update `VITE_APP_URL` to your final domain
 
 For detailed deployment instructions, see:
+
 - [Cloudflare Deployment Guide](./.docs/CLOUDFLARE_DEPLOYMENT.md) - Complete step-by-step guide with troubleshooting
 
 ## Contributing
@@ -450,12 +483,14 @@ For detailed deployment instructions, see:
 We welcome contributions! Here's how you can help:
 
 1. **Fork the repository**
+
    ```powershell
    git clone <YOUR_FORK_URL>
-   cd lepakmasjid_v2
+   cd lepakmasjid
    ```
 
 2. **Create a feature branch**
+
    ```powershell
    git checkout -b feature/amazing-feature
    ```
@@ -466,12 +501,15 @@ We welcome contributions! Here's how you can help:
    - Update documentation as needed
 
 4. **Commit your changes**
+
    ```powershell
    git commit -m 'Add some amazing feature'
    ```
+
    Use clear, descriptive commit messages.
 
 5. **Push to the branch**
+
    ```powershell
    git push origin feature/amazing-feature
    ```
@@ -486,11 +524,13 @@ We welcome contributions! Here's how you can help:
 This project uses **ESLint** for linting and **Prettier** for code formatting to ensure consistent code style across the codebase.
 
 #### ESLint
+
 - **Configuration**: `eslint.config.js` (flat config format)
 - **Plugins**: TypeScript ESLint, React Hooks, React Refresh
 - **Integration**: Configured to work with Prettier (no conflicts)
 
 #### Prettier
+
 - **Configuration**: `.prettierrc`
 - **Settings**: 2-space indentation, semicolons, double quotes, 80 character line width
 - **Integration**: ESLint rules that conflict with Prettier are disabled
@@ -498,6 +538,7 @@ This project uses **ESLint** for linting and **Prettier** for code formatting to
 #### Usage
 
 Before committing code, run:
+
 ```powershell
 # Format all code files
 pnpm format
@@ -513,6 +554,7 @@ pnpm format:check
 ```
 
 **Recommended**: Set up your editor to format on save:
+
 - **VS Code**: Install the "Prettier - Code formatter" extension and enable "Format on Save"
 - **Other editors**: Configure Prettier integration in your editor settings
 
@@ -537,9 +579,9 @@ See the [LICENSE](./LICENSE) file for details.
 
 This project is inspired by:
 
-- **[sedekah.je](https://sedekah.je)** by [khairin chan](https://github.com/khairinchan) - Inspiration for community-driven directory approach
-- **[getdoa.com](https://getdoa.com)** by [hazqeel](https://github.com/hazqeel) - Inspiration for Islamic community tools
-- **[pasarmalam.app](https://pasarmalam.app)** by [muaz](https://github.com/muazhazali) - Inspiration for location-based directory applications
+- **[sedekah.je](https://sedekah.je)** by [khairin chan](https://github.com/khrnchn/sedekah-je) - Inspiration for community-driven directory approach
+- **[getdoa.com](https://getdoa.com)** by [hazqeel](https://github.com/amaal-khayrat/getdoa) - Inspiration for Islamic community tools
+- **[pasarmalam.app](https://pasarmalam.app)** by [muaz](https://github.com/muazhazali/caripasarmalam) - Inspiration for location-based directory applications
 
 We are grateful to the open-source community and all the contributors who have made this project possible.
 
@@ -548,9 +590,10 @@ We are grateful to the open-source community and all the contributors who have m
 For issues, questions, or feature requests:
 
 - **Email**: [hello@lepakmasjid.app](mailto:hello@lepakmasjid.app)
-- **GitHub Issues**: Open an issue on [GitHub](https://github.com/your-username/lepakmasjid_v2/issues)
+- **GitHub Issues**: Open an issue on [GitHub](https://github.com/your-username/lepakmasjid/issues)
 
 Please include:
+
 - A clear description of the issue or question
 - Steps to reproduce (if applicable)
 - Expected vs. actual behavior
