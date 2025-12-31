@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { getImageUrl } from "@/lib/pocketbase-images";
 import SedekahQR from "@/components/SedekahQR";
 import OpenMapsButton from "../components/OpenMapsButton";
+import Nearby from "@/components/Nearby";
 
 const MosqueDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -66,8 +67,8 @@ const MosqueDetail = () => {
       ? mosque.description_bm
       : mosque.description;
 
-  const name_bm = mosque.name_bm
-  const name = mosque.name
+  const name_bm = mosque.name_bm;
+  const name = mosque.name;
   // Get image URL for the mosque
   const imageUrl = getImageUrl(mosque, mosque.image);
 
@@ -140,24 +141,30 @@ const MosqueDetail = () => {
               )}
             </div>
 
-            {/* Map */}
+            {/* Map and Nearby Places */}
             <div className="mb-8">
               <h2 className="font-display text-2xl font-bold mb-4">
                 {t("mosque.location")}
               </h2>
-              <MosqueMap
-                mosques={[mosque]}
-                center={[mosque.lat, mosque.lng]}
-                zoom={15}
-                className="h-[400px] w-full rounded-lg"
-              />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2">
+                  <MosqueMap
+                    mosques={[mosque]}
+                    center={[mosque.lat, mosque.lng]}
+                    zoom={15}
+                    className="h-[400px] w-full rounded-lg"
+                  />
+                  <OpenMapsButton
+                    lat={mosque?.lat}
+                    lng={mosque?.lng}
+                    className="mt-4 w-full"
+                  />
+                </div>
+                <div className="lg:col-span-1">
+                  <Nearby longitude={mosque.lng} latitude={mosque.lat} />
+                </div>
+              </div>
             </div>
-
-            <OpenMapsButton
-              lat={mosque?.lat}
-              lng={mosque?.lng}
-              className="mb-8 w-full"
-            />
 
             {/* Amenities */}
             {mosque.amenities && mosque.amenities.length > 0 && (
@@ -241,11 +248,13 @@ const MosqueDetail = () => {
                 </div>
               </div>
             )}
-            <SedekahQR masjidName_BM={name_bm} masjidName_Eng={name}></SedekahQR>
+            <SedekahQR
+              masjidName_BM={name_bm}
+              masjidName_Eng={name}
+            ></SedekahQR>
           </div>
         </main>
 
-        {/* Sedekah je */}  
         <Footer />
       </div>
     </>
