@@ -21,10 +21,11 @@ const OpenMapsButton: React.FC<OpenMapsButtonProps> = ({ lat, lng, className }) 
   return (
     <Button
       onClick={openMaps}
-      variant="outline"
-      className={`w-full md:w-auto gap-2 ${className || ""}`}
+      variant="default"
+      size="lg"
+      className={cn("w-full gap-2", className)}
     >
-      <MapPinned className="h-4 w-4" />
+      <MapPinned className="h-5 w-5" />
       Get Directions
     </Button>
   );
