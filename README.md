@@ -19,6 +19,11 @@ A community-maintained, searchable directory of mosques in Malaysia focused on f
 - 📝 **Submission Workflow**: Structured submission system with approval/rejection workflow
 - 📈 **Analytics Dashboard**: Admin dashboard with statistics and insights
 
+## Analytics
+
+View our public web analytics dashboard: [https://umami.muaz.app/share/vH9QwmwSuIv2mDiu](https://umami.muaz.app/share/vH9QwmwSuIv2mDiu)
+
+
 ## Tech Stack
 
 ### Frontend
