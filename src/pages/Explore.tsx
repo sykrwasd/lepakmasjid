@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import FilterSidebar from "@/components/FilterSidebar";
 import MosqueCard from "@/components/MosqueCard";
 import { MapView } from "@/components/Map/MapView";
+import { useNearMe } from "@/components/NearMe";
+import { calculateDistance } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -23,7 +25,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
-import type { MosqueFilters } from "@/types";
+import type { MosqueFilters, Mosque } from "@/types";
 
 const VIEW_MODE_STORAGE_KEY = "explore-view-mode";
 const PER_PAGE = 12;
@@ -35,12 +37,29 @@ const Explore = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Near Me geolocation hook
+  const {
+    location: userLocation,
+    isLoading: isLoadingLocation,
+    error: locationError,
+    requestLocation,
+    clearLocation,
+  } = useNearMe();
+
   // Read from URL params
   const searchQuery = searchParams.get("q") || "";
   const selectedState = searchParams.get("state") || "";
   const selectedAmenities = useMemo(() => {
     const amenitiesParam = searchParams.get("amenities");
     return amenitiesParam ? amenitiesParam.split(",").filter(Boolean) : [];
+  }, [searchParams]);
+
+  // Near Me state from URL
+  const nearMeEnabled = searchParams.get("nearme") === "true";
+  const radius = useMemo(() => {
+    const radiusParam = searchParams.get("radius");
+    const parsed = radiusParam ? parseInt(radiusParam, 10) : 10;
+    return parsed > 0 && parsed <= 50 ? parsed : 10;
   }, [searchParams]);
 
   const viewMode: "grid" | "list" | "map" = useMemo(() => {
@@ -85,14 +104,17 @@ const Explore = () => {
     }
   }, [currentPage]);
 
+  // Determine if we need all mosques (for map view or near me filtering)
+  const needsAllMosques = viewMode === "map" || (nearMeEnabled && userLocation);
+
   const filters: MosqueFilters = useMemo(
     () => ({
       state: selectedState || undefined,
       amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
       search: searchQuery || undefined,
       sortBy,
-      page: viewMode !== "map" ? currentPage : undefined,
-      perPage: viewMode !== "map" ? PER_PAGE : undefined,
+      page: !needsAllMosques ? currentPage : undefined,
+      perPage: !needsAllMosques ? PER_PAGE : undefined,
     }),
     [
       searchQuery,
@@ -100,37 +122,63 @@ const Explore = () => {
       selectedAmenities,
       sortBy,
       currentPage,
-      viewMode,
+      needsAllMosques,
     ]
   );
 
-  // Use paginated query for grid/list view, all mosques for map view
+  // Use paginated query when not using "Near Me" or map view
   const {
     data: paginatedData,
     isLoading,
     error,
-  } = useMosques(viewMode !== "map" ? filters : undefined);
+  } = useMosques(!needsAllMosques ? filters : undefined);
+
+  // Use all mosques query for map view or Near Me filtering (cached for 5 minutes)
   const {
-    data: allMosques = [],
+    data: allMosquesData = [],
     isLoading: isLoadingAll,
     error: errorAll,
   } = useMosquesAll(
-    viewMode === "map"
+    needsAllMosques
       ? {
           state: selectedState || undefined,
           amenities:
             selectedAmenities.length > 0 ? selectedAmenities : undefined,
           search: searchQuery || undefined,
-          sortBy,
+          sortBy: nearMeEnabled && userLocation ? "nearest" : sortBy,
         }
       : undefined
   );
 
-  const mosques = viewMode === "map" ? allMosques : paginatedData?.items || [];
-  const isLoadingView = viewMode === "map" ? isLoadingAll : isLoading;
-  const errorView = viewMode === "map" ? errorAll : error;
-  const totalPages = paginatedData?.totalPages || 1;
-  const totalItems = paginatedData?.totalItems || mosques.length;
+  // Filter mosques by distance when Near Me is enabled (client-side filtering on cached data)
+  const filteredMosques = useMemo(() => {
+    if (!nearMeEnabled || !userLocation) {
+      return allMosquesData;
+    }
+
+    // Filter by radius and sort by distance
+    const withDistance = allMosquesData
+      .map((mosque) => ({
+        ...mosque,
+        distance: calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          mosque.lat,
+          mosque.lng
+        ),
+      }))
+      .filter((mosque) => mosque.distance <= radius)
+      .sort((a, b) => a.distance - b.distance);
+
+    return withDistance;
+  }, [allMosquesData, nearMeEnabled, userLocation, radius]);
+
+  // Determine which mosques to display
+  const mosques = needsAllMosques ? filteredMosques : paginatedData?.items || [];
+  const isLoadingView = needsAllMosques ? isLoadingAll : isLoading;
+  const errorView = needsAllMosques ? errorAll : error;
+  const totalPages = needsAllMosques ? 1 : paginatedData?.totalPages || 1;
+  const totalItems = needsAllMosques ? filteredMosques.length : paginatedData?.totalItems || mosques.length;
 
   // Helper to update URL params
   const updateParams = (updates: Record<string, string | null>) => {
@@ -180,7 +228,23 @@ const Explore = () => {
     updateParams({ page: page > 1 ? page.toString() : null });
   };
 
+  const setNearMeEnabled = (enabled: boolean) => {
+    if (enabled) {
+      // Request location when enabling Near Me
+      requestLocation();
+      updateParams({ nearme: "true", page: null });
+    } else {
+      clearLocation();
+      updateParams({ nearme: null, radius: null, page: null });
+    }
+  };
+
+  const setRadius = (newRadius: number) => {
+    updateParams({ radius: newRadius !== 10 ? newRadius.toString() : null });
+  };
+
   const clearFilters = () => {
+    clearLocation();
     setSearchParams(new URLSearchParams(), { replace: true });
   };
 
@@ -189,7 +253,7 @@ const Explore = () => {
   };
 
   const activeFilterCount =
-    (selectedState ? 1 : 0) + selectedAmenities.length + (searchQuery ? 1 : 0);
+    (selectedState ? 1 : 0) + selectedAmenities.length + (searchQuery ? 1 : 0) + (nearMeEnabled ? 1 : 0);
 
   return (
     <>
@@ -228,6 +292,14 @@ const Explore = () => {
                 onClose={() => setIsFilterOpen(false)}
                 sortBy={sortBy}
                 onSortChange={setSortBy}
+                // Near Me props
+                nearMeEnabled={nearMeEnabled}
+                onNearMeToggle={setNearMeEnabled}
+                userLocation={userLocation}
+                isLoadingLocation={isLoadingLocation}
+                locationError={locationError}
+                distance={radius}
+                onDistanceChange={setRadius}
               />
 
               {/* Main content */}
@@ -313,19 +385,24 @@ const Explore = () => {
                 {/* Results count */}
                 {!errorView && (
                   <p className="text-sm text-muted-foreground mb-6">
-                    {viewMode === "map" ? (
+                    {viewMode === "map" || (nearMeEnabled && userLocation) ? (
                       <>
                         {t("explore.showing")}{" "}
                         <span className="font-medium text-foreground">
                           {totalItems}
                         </span>{" "}
                         {t("explore.mosques")}
+                        {nearMeEnabled && userLocation && (
+                          <span className="ml-1">
+                            {t("filter.within_radius").replace("{distance}", radius.toString())}
+                          </span>
+                        )}
                       </>
                     ) : (
                       <>
                         {t("explore.showing")}{" "}
                         <span className="font-medium text-foreground">
-                          {(currentPage - 1) * PER_PAGE + 1}
+                          {Math.min((currentPage - 1) * PER_PAGE + 1, totalItems)}
                         </span>
                         {" - "}
                         <span className="font-medium text-foreground">
@@ -399,8 +476,8 @@ const Explore = () => {
                       ))}
                     </div>
 
-                    {/* Pagination */}
-                    {viewMode !== "map" && totalPages > 1 && (
+                    {/* Pagination - only show when not in map view or near me mode */}
+                    {!needsAllMosques && totalPages > 1 && (
                       <div className="mt-8">
                         <Pagination>
                           <PaginationContent>

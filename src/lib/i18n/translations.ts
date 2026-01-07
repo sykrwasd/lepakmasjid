@@ -77,6 +77,12 @@ export const translations = {
     "filter.sort.nearest": "Nearest",
     "filter.sort.most_amenities": "Most Amenities",
     "filter.sort.alphabetical": "Alphabetical",
+    // Near Me
+    "filter.near_me": "Nearby",
+    "filter.enable_location": "Enable location",
+    "filter.location_denied": "Location access denied",
+    "filter.getting_location": "Getting your location...",
+    "filter.within_radius": "within {distance} km",
 
     // Admin
     "admin.panel": "Admin Panel",
@@ -589,6 +595,12 @@ export const translations = {
     "filter.sort.nearest": "Terdekat",
     "filter.sort.most_amenities": "Kebanyakan Kemudahan",
     "filter.sort.alphabetical": "Abjad",
+    // Near Me
+    "filter.near_me": "Berdekatan",
+    "filter.enable_location": "Aktifkan lokasi",
+    "filter.location_denied": "Akses lokasi ditolak",
+    "filter.getting_location": "Mendapatkan lokasi anda...",
+    "filter.within_radius": "dalam lingkungan {distance} km",
 
     // Admin
     "admin.panel": "Panel Pentadbir",
