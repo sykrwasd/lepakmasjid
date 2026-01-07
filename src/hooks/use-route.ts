@@ -22,7 +22,6 @@ export function useRoutes(
         const url = `https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=full&geometries=geojson`;
         const res = await fetch(url);
         const data = await res.json();
-        console.log(data)
 
         if (data.routes && data.routes.length > 0) {
           const coords = data.routes[0].geometry.coordinates; 

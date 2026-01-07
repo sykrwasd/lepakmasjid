@@ -31,8 +31,7 @@ const TripPlanner = () => {
   const { routes, loading } = useRoutes(fromCoords, toCoords);
   const { data: mosques } = useMosquesAll();
   const { mosquesAlongRoute, closestMosque } = useRouteMosque(mosques, routes);
-  console.log(mosquesAlongRoute);
-
+  
   const handleFromSelect = (place: any) => {
     setFromValue(place.display_name);
     setFromPlace(place);
