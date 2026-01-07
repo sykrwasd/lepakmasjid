@@ -167,7 +167,7 @@ const FilterSidebar = ({
           {hasActiveFilters && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                {selectedAmenities.length + (selectedState ? 1 : 0)}{" "}
+                {selectedAmenities.length + (selectedState ? 1 : 0) + (nearMeEnabled ? 1 : 0)}{" "}
                 {t("common.filter")}
               </span>
               <Button
