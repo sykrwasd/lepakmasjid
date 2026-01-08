@@ -28,9 +28,17 @@ const TripPlanner = () => {
   const { results: toResults } = usePlaceSearch(toValue);
   const { coords: fromCoords } = useCoords(fromPlace);
   const { coords: toCoords } = useCoords(toPlace);
-  const { routes, loading } = useRoutes(fromCoords, toCoords);
+  
+  const [searchTrigger, setSearchTrigger] = useState<{from: any, to: any} | null>(null);
+  const { routes, loading } = useRoutes(searchTrigger?.from, searchTrigger?.to);
   const { data: mosques } = useMosquesAll();
   const { mosquesAlongRoute, closestMosque } = useRouteMosque(mosques, routes);
+  
+  const handleSearch = () => {
+    if (fromCoords && toCoords) {
+      setSearchTrigger({ from: fromCoords, to: toCoords });
+    }
+  };
   
   const handleFromSelect = (place: any) => {
     setFromValue(place.display_name);
@@ -55,27 +63,27 @@ const TripPlanner = () => {
       <Header />
       <main className="flex-grow relative h-[calc(100vh-4rem)]">
         {/* Floating Search Card */}
-        <div className="absolute top-4 left-4 z-[1000] w-full max-w-md px-4 sm:px-0 pointer-events-none">
+        <div className="absolute top-2 md:top-4 left-0 md:left-4 z-[1000] w-full md:w-auto md:max-w-md px-2 md:px-0 pointer-events-none flex flex-col gap-2">
           {/* Main Search Logic - pointer-events-auto for interactions */}
-          <div className="bg-white/95 backdrop-blur-xl p-6 rounded-2xl shadow-2xl border border-white/20 space-y-6 pointer-events-auto transition-all duration-300">
+          <div className="bg-white/95 backdrop-blur-xl p-4 md:p-6 rounded-2xl shadow-2xl border border-white/20 space-y-4 md:space-y-6 pointer-events-auto transition-all duration-300">
             <div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                 Plan Your Journey
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs md:text-sm text-gray-500 mt-1">
                 Find the best route and discover mosques along your way
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {/* FROM Input */}
-              <div className="space-y-2">
+              <div className="space-y-1.5 md:space-y-2">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1">
-                  <MapPin className="h-3 w-3 text-blue-500" /> From
+                  <MapPin className="h-3 w-3 text-green-500" /> From
                 </label>
                 <div className="relative group">
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
                     <Input
                       value={fromValue}
                       onChange={(e) => {
@@ -83,11 +91,11 @@ const TripPlanner = () => {
                         setShowFromResults(true);
                       }}
                       placeholder="Enter starting location..."
-                      className="pl-10 pr-4 py-6 text-base bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all shadow-sm rounded-xl"
+                      className="pl-10 pr-4 py-4 md:py-6 text-sm md:text-base bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all shadow-sm rounded-xl text-black"
                     />
                   </div>
                   {showFromResults && fromResults.length > 0 && (
-                    <ul className="absolute z-[2000] mt-2 w-full bg-white/95 backdrop-blur-md border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-auto divide-y divide-gray-50 animate-in fade-in slide-in-from-top-2 duration-200 scrollbar-thin scrollbar-thumb-gray-200">
+                    <ul className="absolute z-[2000] mt-2 w-full bg-white/95 backdrop-blur-md border border-gray-100 rounded-xl shadow-xl max-h-48 md:max-h-60 overflow-auto divide-y divide-gray-50 animate-in fade-in slide-in-from-top-2 duration-200 scrollbar-thin scrollbar-thumb-gray-200">
                       {fromResults.map((place, i) => (
                         <li
                           key={i}
@@ -106,7 +114,7 @@ const TripPlanner = () => {
               </div>
 
               {/* TO Input */}
-              <div className="space-y-2">
+              <div className="space-y-1.5 md:space-y-2">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1">
                   <Navigation className="h-3 w-3 text-green-500" /> To
                 </label>
@@ -120,11 +128,11 @@ const TripPlanner = () => {
                         setShowToResults(true);
                       }}
                       placeholder="Enter destination..."
-                      className="pl-10 pr-4 py-6 text-base bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all shadow-sm rounded-xl"
+                      className="pl-10 pr-4 py-4 md:py-6 text-sm md:text-base bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all shadow-sm rounded-xl text-black"
                     />
                   </div>
                   {showToResults && toResults.length > 0 && (
-                    <ul className="absolute z-[2000] mt-2 w-full bg-white/95 backdrop-blur-md border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-auto divide-y divide-gray-50 animate-in fade-in slide-in-from-top-2 duration-200 scrollbar-thin scrollbar-thumb-gray-200">
+                    <ul className="absolute z-[2000] mt-2 w-full bg-white/95 backdrop-blur-md border border-gray-100 rounded-xl shadow-xl max-h-48 md:max-h-60 overflow-auto divide-y divide-gray-50 animate-in fade-in slide-in-from-top-2 duration-200 scrollbar-thin scrollbar-thumb-gray-200">
                       {toResults.map((place, i) => (
                         <li
                           key={i}
@@ -142,12 +150,22 @@ const TripPlanner = () => {
                 </div>
               </div>
 
+              {/* Search Button */}
+              <Button 
+                onClick={handleSearch}
+                disabled={!fromCoords || !toCoords || loading}
+                className="w-full py-6 text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all active:scale-[0.98]"
+              >
+                {loading ? "Calculating..." : "Search Route"}
+                {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+              </Button>
+
               {/* Loading Indicator */}
               {loading && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center justify-center gap-3 py-3 bg-blue-50/50 rounded-xl border border-blue-100 text-blue-600">
-                    <div className="h-5 w-5 bg-blue-500 rounded-full animate-ping absolute opacity-20"></div>
-                    <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin relative"></div>
+                  <div className="flex items-center justify-center gap-3 py-3 bg-blue-50/50 rounded-xl border border-blue-100 text-green-600">
+                    <div className="h-5 w-5 bg-green-500 rounded-full animate-ping absolute opacity-20"></div>
+                    <div className="h-4 w-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin relative"></div>
                     <span className="text-sm font-medium">
                       Calculating best route...
                     </span>
@@ -159,10 +177,10 @@ const TripPlanner = () => {
 
           {/* Selected Mosque Card */}
           {selectedMosque && (
-            <div className="mt-4 bg-white/90 backdrop-blur-xl p-0 rounded-2xl shadow-2xl border border-white/20 overflow-hidden pointer-events-auto animate-in fade-in slide-in-from-left-4 duration-500 ring-1 ring-black/5">
+            <div className="mt-2 md:mt-4 bg-white/90 backdrop-blur-xl p-0 rounded-2xl shadow-2xl border border-white/20 overflow-hidden pointer-events-auto animate-in fade-in slide-in-from-left-4 duration-500 ring-1 ring-black/5">
               <div className="relative group">
                 {/* Image Header */}
-                <div className="h-40 bg-gray-100 w-full relative overflow-hidden">
+                <div className="h-32 md:h-40 bg-gray-100 w-full relative overflow-hidden">
                   {selectedMosque.image &&
                   typeof selectedMosque.image === "string" ? (
                     <img
@@ -189,9 +207,9 @@ const TripPlanner = () => {
                   </Button>
                 </div>
 
-                <div className="p-5 space-y-3 -mt-4 relative">
-                  <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-lg leading-tight text-gray-900 mb-1">
+                <div className="p-4 md:p-5 space-y-3 -mt-4 relative">
+                  <div className="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-base md:text-lg leading-tight text-gray-900 mb-1">
                       {selectedMosque.name}
                     </h3>
                     <div className="flex items-start gap-2 text-gray-500">

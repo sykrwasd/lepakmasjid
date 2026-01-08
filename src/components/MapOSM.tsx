@@ -1,6 +1,6 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, ZoomControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -71,16 +71,18 @@ export default function MapOSM({
   onMosqueClick,
 }: MapOSMProps) {
   const routePoints = route?.map((p) => [p.lat, p.lon] as [number, number]);
-  const start = routePoints?.[0]; // first point
-  const end = routePoints?.[routePoints.length - 1]; // last point
+  const start = routePoints?.[0]; 
+  const end = routePoints?.[routePoints.length - 1]; 
 
   return (
     <div className={cn("w-full h-[500px] mt-6 rounded-xl overflow-hidden", className)}>
       <MapContainer
         center={[lat, lon]}
         zoom={zoom}
+        zoomControl={false}
         style={{ height: "100%", width: "100%" }}
       >
+        <ZoomControl position="bottomright" />
         <MapController lat={lat} lon={lon} zoom={zoom} />
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
